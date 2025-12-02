@@ -96,7 +96,7 @@ public enum StreamReadFeature
      * printed, and not the whole contents. Further, many source reference types cannot
      * necessarily access contents (like streams), so only type is indicated, not contents.
      *<p>
-     * Feature is enabled by default, meaning that "source reference" information is passed
+     * Feature is disabled by default, meaning that "source reference" information is passed
      * and some or all of the source content may be included in {@link JsonLocation} information
      * constructed either when requested explicitly, or when needed for an exception.
      */
