@@ -28,6 +28,8 @@ JSON library.
 #1527: `TokenStreamFactory.createNonBlockingByteBufferParser()` return type wrong
  (reported by Henri B)
  (fixed by @pjfanning)
+- Updated `JsonGenerator.writeNumber(String)` javadocs with more specific info
+  on handling by generators that cannot support the method.
 
 3.0.4 (not yet released)
 
