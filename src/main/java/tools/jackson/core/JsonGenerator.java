@@ -2399,8 +2399,6 @@ public abstract class JsonGenerator
     /*
     /**********************************************************************
     /* Helper methods for sub-classes
-    /*
-    /* NOTE: some could be moved out in 3.0 if there was "JsonGeneratorMinimalBase"
     /**********************************************************************
      */
 
