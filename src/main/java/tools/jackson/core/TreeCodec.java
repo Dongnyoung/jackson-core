@@ -25,11 +25,11 @@ public interface TreeCodec<N extends TreeNode>
 
     // // // Read methods
 
-    public abstract JsonParser treeAsTokens(TreeNode node) throws JacksonException;
+    public abstract JsonParser treeAsTokens(N node) throws JacksonException;
 
     public abstract N readTree(JsonParser p) throws JacksonException;
 
     // // // Write methods
 
-    public abstract void writeTree(JsonGenerator g, TreeNode tree) throws JacksonException;
+    public abstract void writeTree(JsonGenerator g, N node) throws JacksonException;
 }
