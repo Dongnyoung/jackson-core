@@ -14,6 +14,10 @@ a pure JSON library.
 === Releases ===
 ------------------------------------------------------------------------
 
+2.20.2 (19-Jan-2026)
+
+No changes since 2.20.1
+
 2.20.1 (30-Oct-2025)
 
 #1473: Bug with Surrogates + Segments in the `UTF8JsonGenerator`
