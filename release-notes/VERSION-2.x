@@ -36,6 +36,10 @@ a pure JSON library.
  (reported by @ventusfortis)
 - Add shading for FastDoubleParser JDK 23 class overrides
 
+2.20.2 (19-Jan-2026)
+
+No changes since 2.20.1
+
 2.20.1 (30-Oct-2025)
 
 #1473: Bug with Surrogates + Segments in the `UTF8JsonGenerator`
