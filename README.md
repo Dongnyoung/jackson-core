@@ -123,7 +123,7 @@ Implemented limits are:
 * Maximum Number token length (2.15+): (see https://github.com/FasterXML/jackson-core/issues/815)
     * Default: Maximum 1000 for both integral and floating-point numbers.
 * Maximum String value length (2.15+): (see https://github.com/FasterXML/jackson-core/issues/863)
-    * Default: 20_000_000 (20 million) (since 2.15.1; 2.15.0 had lower limit, 5 million)
+    * Default: 100_000_000 (100 million) (since 3.1; was 20 million in 2.x/3.0)
 * Maximum Input nesting depth (2.15+): (see https://github.com/FasterXML/jackson-core/pull/943)
     * Default: 1000 levels
 * Maximum Property name length (2.16+): (see https://github.com/FasterXML/jackson-core/issues/1047)

@@ -29,6 +29,7 @@ JSON library.
  (reported by Henri B)
  (fixed by @pjfanning)
 #1534: Change `TreeCodec` to take type parameter `T extends TreeNode`
+#1538: Increase default `StreamReadConstraints.maxStringLength` to 100M (from 20M)
 - Updated `JsonGenerator.writeNumber(String)` javadocs with more specific info
   on handling by generators that cannot support the method.
 
