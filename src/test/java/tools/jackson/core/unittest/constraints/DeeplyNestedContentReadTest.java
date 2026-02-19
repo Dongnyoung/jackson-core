@@ -33,6 +33,15 @@ public class DeeplyNestedContentReadTest
         }
     }
 
+    @Test
+    public void testDeepNestingDataInput() throws Exception
+    {
+        final String DOC = createDeepNestedDoc(MAX_NESTING + 1);
+        try (JsonParser p = createParser(JSON_F, MODE_DATA_INPUT, DOC)) {
+            _testDeepNesting(p);
+        }
+    }
+
     private void _testDeepNesting(JsonParser p) throws Exception
     {
         try {
