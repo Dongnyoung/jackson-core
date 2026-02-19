@@ -92,7 +92,8 @@ public class StreamReadConstraints
     private static StreamReadConstraints DEFAULT =
         new StreamReadConstraints(DEFAULT_MAX_DEPTH,
                 DEFAULT_MAX_DOC_LEN,
-                DEFAULT_MAX_NUM_LEN, DEFAULT_MAX_STRING_LEN, DEFAULT_MAX_NAME_LEN);
+                DEFAULT_MAX_NUM_LEN, DEFAULT_MAX_STRING_LEN, DEFAULT_MAX_NAME_LEN,
+                DEFAULT_MAX_TOKEN_COUNT);
 
     /**
      * Override the default StreamReadConstraints. These defaults are only used when {@link JsonFactory}
@@ -113,8 +114,10 @@ public class StreamReadConstraints
      */
     public static void overrideDefaultStreamReadConstraints(final StreamReadConstraints streamReadConstraints) {
         if (streamReadConstraints == null) {
-            DEFAULT = new StreamReadConstraints(DEFAULT_MAX_DEPTH, DEFAULT_MAX_DOC_LEN,
-                    DEFAULT_MAX_NUM_LEN, DEFAULT_MAX_STRING_LEN);
+            DEFAULT = new StreamReadConstraints(DEFAULT_MAX_DEPTH,
+                    DEFAULT_MAX_DOC_LEN,
+                    DEFAULT_MAX_NUM_LEN, DEFAULT_MAX_STRING_LEN, DEFAULT_MAX_NAME_LEN,
+                    DEFAULT_MAX_TOKEN_COUNT);
         } else {
             DEFAULT = streamReadConstraints;
         }
@@ -313,8 +316,9 @@ public class StreamReadConstraints
      */
     @Deprecated // since 2.18
     protected StreamReadConstraints(final int maxNestingDepth, final long maxDocLen,
-                                    final int maxNumLen, final int maxStringLen, final int maxNameLen) {
-        this(maxNestingDepth, maxDocLen, maxNumLen, maxStringLen, maxNameLen, DEFAULT_MAX_TOKEN_COUNT);
+            final int maxNumLen, final int maxStringLen, final int maxNameLen) {
+        this(maxNestingDepth, maxDocLen, maxNumLen, maxStringLen, maxNameLen,
+                DEFAULT_MAX_TOKEN_COUNT);
     }
 
     /**
@@ -328,7 +332,8 @@ public class StreamReadConstraints
      * @since 2.18
      */
     protected StreamReadConstraints(final int maxNestingDepth, final long maxDocLen,
-            final int maxNumLen, final int maxStringLen, final int maxNameLen, final long maxTokenCount) {
+            final int maxNumLen, final int maxStringLen, final int maxNameLen,
+            final long maxTokenCount) {
         _maxNestingDepth = maxNestingDepth;
         _maxDocLen = maxDocLen;
         _maxNumLen = maxNumLen;
