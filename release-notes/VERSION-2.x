@@ -14,7 +14,7 @@ a pure JSON library.
 === Releases ===
 ------------------------------------------------------------------------
 
-2.18.6 (not yet released)
+2.18.6 (22-Feb-2026)
 
 #1512: Number-parsing fix for `UTF8DataInputJsonParser`
  (reported by @ventusfortis)
