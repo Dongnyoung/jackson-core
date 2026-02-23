@@ -14,7 +14,7 @@ a pure JSON library.
 === Releases ===
 ------------------------------------------------------------------------
 
-2.21.1 (not yet released)
+2.21.1 (22-Feb-2026)
 
 #1548: `StreamReadConstraints.maxDocumentLength` not checked when
   creating parser with fixed buffer
