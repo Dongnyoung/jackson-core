@@ -30,3 +30,13 @@ Henri Biström (@hb16)
 Afzal Najam (@AfzalivE)
  * Reported #1541: Unexpected Illegal surrogate character when parsing field names
   (3.1.0)
+
+Prabhav Srinath (@sprabhav7)
+ * Reported #1553: Max Depth validation not working for `DataInput`-backed `JsonParser`s
+   in 3.0
+  (3.1.0)
+
+Rohan Nagendra (@rohan-repos)
+ * Reported #1553: Max Depth validation not working for `DataInput`-backed `JsonParser`s
+   in 3.0
+  (3.1.0)
