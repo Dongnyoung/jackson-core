@@ -65,6 +65,7 @@ No changes since 2.19.1
   creating parser with fixed buffer
 #1555: Enforce `StreamReadConstraints.maxNumberLength` for
   non-blocking (async) parser
+ (reported by Prabhav S, Rohan N)
  (fix by @pjfanning)
 
 2.18.5 (27-Oct-2025)
