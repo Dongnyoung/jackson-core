@@ -192,37 +192,55 @@ class SimpleParserTest extends JacksonCoreTestBase
         assertEquals("key1", ctxt.currentName());
 
         ctxt = p.streamReadContext();
-        assertEquals(1, ctxt.getEntryCount());
         assertEquals(0, ctxt.getCurrentIndex());
+        assertEquals(1, ctxt.getEntryCount());
 
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         verifyFieldName(p, "key2");
         ctxt = p.streamReadContext();
-        assertEquals(2, ctxt.getEntryCount());
         assertEquals(1, ctxt.getCurrentIndex());
+        assertEquals(2, ctxt.getEntryCount());
         assertEquals("key2", ctxt.currentName());
 
         assertToken(JsonToken.VALUE_TRUE, p.nextToken());
+        assertEquals(1, ctxt.getCurrentIndex());
+        assertEquals(2, ctxt.getEntryCount());
         assertEquals("key2", ctxt.currentName());
 
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         verifyFieldName(p, "key3");
+        assertEquals(2, ctxt.getCurrentIndex());
+        assertEquals(3, ctxt.getEntryCount());
         assertToken(JsonToken.VALUE_FALSE, p.nextToken());
+        assertEquals(2, ctxt.getCurrentIndex());
+        assertEquals(3, ctxt.getEntryCount());
 
         assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
         verifyFieldName(p, "key4");
+        assertEquals(3, ctxt.getCurrentIndex());
+        assertEquals(4, ctxt.getEntryCount());
 
         assertToken(JsonToken.START_ARRAY, p.nextToken());
         ctxt = p.streamReadContext();
         assertTrue(ctxt.inArray());
         assertNull(ctxt.currentName());
+        assertEquals(0, ctxt.getCurrentIndex());
+        assertEquals(0, ctxt.getEntryCount());
         assertEquals("key4", ctxt.getParent().currentName());
 
         assertToken(JsonToken.VALUE_FALSE, p.nextToken());
+        assertEquals(0, ctxt.getCurrentIndex());
+        assertEquals(1, ctxt.getEntryCount());
         assertEquals("[0]", ctxt.toString());
 
         assertToken(JsonToken.VALUE_NULL, p.nextToken());
+        assertEquals(1, ctxt.getCurrentIndex());
+        assertEquals(2, ctxt.getEntryCount());
+
         assertToken(JsonToken.VALUE_TRUE, p.nextToken());
+        assertEquals(2, ctxt.getCurrentIndex());
+        assertEquals(3, ctxt.getEntryCount());
+
         assertToken(JsonToken.END_ARRAY, p.nextToken());
 
         ctxt = p.streamReadContext();
