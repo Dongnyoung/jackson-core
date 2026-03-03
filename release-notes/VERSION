@@ -56,7 +56,7 @@ No changes since 3.1.0
 #1548: `StreamReadConstraints.maxDocumentLength` not checked when
   creating parser with fixed buffer
 #1553: Max Depth validation not working for `DataInput`-backed `JsonParser`s
-  in 3.0
+  in 3.0 [CVE-2026-29062]
  (reported by Prabhav S, Rohan N)
 #1555: Enforce `StreamReadConstraints.maxNumberLength` for
   non-blocking (async) parser
