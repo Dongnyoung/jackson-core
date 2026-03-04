@@ -14,6 +14,11 @@ a pure JSON library.
 === Releases ===
 ------------------------------------------------------------------------
 
+2.21.2 (not yet released)
+
+#1541: Unexpected Illegal surrogate character when parsing field names
+ (fix by @cowtowncoder, w/ Claude code)
+
 2.21.1 (22-Feb-2026)
 
 #1548: `StreamReadConstraints.maxDocumentLength` not checked when
@@ -61,6 +66,17 @@ No changes since 2.20.1
  (contributed by @pjfanning)-
 #1462: Deprecate `URL`-taking factory method of `JsonFactory`
 - Generate SBOMs [JSTEP-14]
+
+2.19.5 (not yet released)
+
+#1512: Number-parsing fix for `UTF8DataInputJsonParser`
+ (reported by @ventusfortis)
+#1548: `StreamReadConstraints.maxDocumentLength` not checked when
+  creating parser with fixed buffer
+#1555: Enforce `StreamReadConstraints.maxNumberLength` for
+  non-blocking (async) parser
+ (reported by Prabhav S, Rohan N)
+ (fix by @pjfanning)
 
 2.19.4 (29-Oct-2025)
 2.19.3 (29-Oct-2025)
