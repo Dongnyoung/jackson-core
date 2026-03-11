@@ -18,6 +18,9 @@ a pure JSON library.
 
 #1541: Unexpected Illegal surrogate character when parsing field names
  (fix by @cowtowncoder, w/ Claude code)
+#1570: Fail parsing from `DataInput` if
+  `StreamReadConstraints.getMaxDocumentLength()` set [GHSA-2m67-wjpj-xhg9]
+ (fix by @cowtowncoder, w/ Claude code)
 
 2.21.1 (22-Feb-2026)
 
@@ -120,6 +123,12 @@ No changes since 2.19.1
 #1421: Make `JsonReadContext` non-final
  (requested by Ilenia S)
  (fixed by @pjfanning)
+
+2.18.7 (not yet released)
+
+#1570: Fail parsing from `DataInput` if
+  `StreamReadConstraints.getMaxDocumentLength()` set [GHSA-2m67-wjpj-xhg9]
+ (fix by @cowtowncoder, w/ Claude code)
 
 2.18.6 (22-Feb-2026)
 
