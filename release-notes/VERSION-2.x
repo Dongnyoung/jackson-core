@@ -18,6 +18,9 @@ a pure JSON library.
 
 #1541: Unexpected Illegal surrogate character when parsing field names
  (fix by @cowtowncoder, w/ Claude code)
+#1570: Fail parsing from `DataInput` if
+  `StreamReadConstraints.getMaxDocumentLength()` set [GHSA-2m67-wjpj-xhg9]
+ (fix by @cowtowncoder, w/ Claude code)
 
 2.21.1 (22-Feb-2026)
 
