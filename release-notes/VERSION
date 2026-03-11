@@ -29,10 +29,6 @@ JSON library.
 
 3.1.1 (not yet released)
 
-No changes since 3.1.0
-
-3.1.1 (not yet released)
-
 #1562: Move `module-info.class` to jar root level (`/module-info.class`)
   from under `META-INF/versions/17`
 #1570: Fail parsing from `DataInput` if
