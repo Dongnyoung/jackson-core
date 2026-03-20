@@ -14,7 +14,7 @@ a pure JSON library.
 === Releases ===
 ------------------------------------------------------------------------
 
-2.21.2 (not yet released)
+2.21.2 (20-Mar-2026)
 
 #1541: Unexpected Illegal surrogate character when parsing field names
  (fix by @cowtowncoder, w/ Claude code)
