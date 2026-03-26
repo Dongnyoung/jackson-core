@@ -126,6 +126,11 @@ public class UTF8DataInputJsonParser
         return _inputData;
     }
 
+    @Override
+    public boolean willInternPropertyNames() {
+        return _symbols.willInternStrings();
+    }
+
     /*
     /**********************************************************************
     /* Overrides, low-level reading

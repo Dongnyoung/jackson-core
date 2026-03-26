@@ -155,6 +155,8 @@ class DelegatesTest extends JacksonCoreTestBase
         assertEquals(MAX_NUMBER_LEN, parser.streamReadConstraints().getMaxNumberLength());
         assertSame(parser.streamReadCapabilities(), del.streamReadCapabilities());
 
+        assertEquals(parser.willInternPropertyNames(), del.willInternPropertyNames());
+
         // configuration
         assertFalse(del.isEnabled(StreamReadFeature.IGNORE_UNDEFINED));
         assertSame(parser, del.delegate());
