@@ -32,7 +32,7 @@ JSON library.
 #1576: Use Java 17 intrinstics for long multiplication
  (contributed by @xtonik)
 
-3.1.1 (not yet released)
+3.1.1 (27-Mar-2026)
 
 #1562: Move `module-info.class` to jar root level (`/module-info.class`)
   from under `META-INF/versions/17`
