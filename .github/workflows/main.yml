@@ -22,7 +22,8 @@ jobs:
         # We will actually need "os" as Matrix to have Windows build
         os: ['ubuntu-24.04']
         include:
-          - java_version: '17'
+          # 06-Apr-2026, tatu: [core#1561] Must build with JDK21 to get JavaDocs
+          - java_version: '21'
             os: 'ubuntu-24.04'
             release_build: 'R'
           - java_version: '17'
