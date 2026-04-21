@@ -162,6 +162,14 @@ public abstract class NonBlockingJsonParserBase
 
     protected int _quotedDigits;
 
+    /**
+     * High surrogate code point awaiting matching low surrogate during
+     * field name parsing, or 0 if none pending.
+     *
+     * @since 2.21.3
+     */
+    protected int _pendingSurrogateInName;
+
     /*
     /**********************************************************************
     /* Additional parsing state
