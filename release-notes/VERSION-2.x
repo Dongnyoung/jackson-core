@@ -20,6 +20,8 @@ a pure JSON library.
    character when parsing field names
  (reported by Mike P)
  (fix by @pjfanning)
+#1600: Rework 3rd party licenses in jar
+ (fix by @pjfanning)
 
 2.21.2 (20-Mar-2026)
 

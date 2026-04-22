@@ -192,6 +192,7 @@ com.fasterxml.jackson.core.*;version=${project.version}
                   <artifact>ch.randelshofer:fastdoubleparser</artifact>
                   <excludes>
                     <exclude>META-INF/LICENSE</exclude>
+                    <exclude>META-INF/thirdparty-LICENSE</exclude>
                     <exclude>META-INF/MANIFEST.MF</exclude>
                     <exclude>META-INF/versions/**/module-info.*</exclude>
                     <!-- 09-Jun-2025, PJ: [core#1446] Exclude Multi-Release classes
@@ -217,14 +218,6 @@ com.fasterxml.jackson.core.*;version=${project.version}
                 <relocation>
                   <pattern>ch/randelshofer/fastdoubleparser/chr</pattern>
                   <shadedPattern>com/fasterxml/jackson/core/internal/shaded/fdp/v${project.version.underscore}/chr</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>META-INF/LICENSE</pattern>
-                  <shadedPattern>META-INF/FastDoubleParser-LICENSE</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>META-INF/NOTICE</pattern>
-                  <shadedPattern>META-INF/FastDoubleParser-NOTICE</shadedPattern>
                 </relocation>
                 <relocation>
                   <pattern>META-INF/jackson-core-LICENSE</pattern>
