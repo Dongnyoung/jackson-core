@@ -220,14 +220,6 @@ com.fasterxml.jackson.core.*;version=${project.version}
                   <shadedPattern>com/fasterxml/jackson/core/internal/shaded/fdp/v${project.version.underscore}/chr</shadedPattern>
                 </relocation>
                 <relocation>
-                  <pattern>META-INF/LICENSE</pattern>
-                  <shadedPattern>META-INF/FastDoubleParser-LICENSE</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>META-INF/NOTICE</pattern>
-                  <shadedPattern>META-INF/FastDoubleParser-NOTICE</shadedPattern>
-                </relocation>
-                <relocation>
                   <pattern>META-INF/jackson-core-LICENSE</pattern>
                   <shadedPattern>META-INF/LICENSE</shadedPattern>
                 </relocation>
