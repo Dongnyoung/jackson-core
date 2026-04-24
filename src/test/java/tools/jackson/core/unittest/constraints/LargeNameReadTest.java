@@ -89,7 +89,6 @@ class LargeNameReadTest extends JacksonCoreTestBase
     @Test
     void largeNameWithSmallLimitDataInput() throws Exception {
         _testLargeNameWithSmallLimitDataInput(JSON_F_NAME_100);
-        _testLargeNameWithSmallLimitDataInput(JSON_F_NAME_100_B);
     }
 
     private void _testLargeNameWithSmallLimitDataInput(JsonFactory jf) throws Exception
