@@ -136,7 +136,7 @@ No changes since 2.19.1
  (requested by Ilenia S)
  (fixed by @pjfanning)
 
-2.18.7 (not yet released)
+2.18.7 (24-Apr-2026)
 
 #1570: Fail parsing from `DataInput` if
   `StreamReadConstraints.getMaxDocumentLength()` set [GHSA-2m67-wjpj-xhg9]
