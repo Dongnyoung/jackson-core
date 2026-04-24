@@ -1479,7 +1479,7 @@ public class UTF8DataInputJsonParser
 
             // Nope, no end in sight. Need to grow quad array etc
             if (qlen >= _quadBuffer.length) {
-                _quadBuffer = growArrayBy(_quadBuffer, qlen);
+                _quadBuffer = _growNameDecodeBuffer(_quadBuffer, qlen);
             }
             _quadBuffer[qlen++] = q;
             q = i;
@@ -1548,7 +1548,7 @@ public class UTF8DataInputJsonParser
                     // Ok, we'll need room for first byte right away
                     if (currQuadBytes >= 4) {
                         if (qlen >= quads.length) {
-                            _quadBuffer = quads = growArrayBy(quads, quads.length);
+                            _quadBuffer = quads = _growNameDecodeBuffer(quads, quads.length);
                         }
                         quads[qlen++] = currQuad;
                         currQuad = 0;
@@ -1564,7 +1564,7 @@ public class UTF8DataInputJsonParser
                         // need room for middle byte?
                         if (currQuadBytes >= 4) {
                             if (qlen >= quads.length) {
-                                _quadBuffer = quads = growArrayBy(quads, quads.length);
+                                _quadBuffer = quads = _growNameDecodeBuffer(quads, quads.length);
                             }
                             quads[qlen++] = currQuad;
                             currQuad = 0;
@@ -1606,7 +1606,7 @@ public class UTF8DataInputJsonParser
                 currQuad = (currQuad << 8) | ch;
             } else {
                 if (qlen >= quads.length) {
-                    _quadBuffer = quads = growArrayBy(quads, quads.length);
+                    _quadBuffer = quads = _growNameDecodeBuffer(quads, quads.length);
                 }
                 quads[qlen++] = currQuad;
                 currQuad = ch;
@@ -1617,7 +1617,7 @@ public class UTF8DataInputJsonParser
 
         if (currQuadBytes > 0) {
             if (qlen >= quads.length) {
-                _quadBuffer = quads = growArrayBy(quads, quads.length);
+                _quadBuffer = quads = _growNameDecodeBuffer(quads, quads.length);
             }
             quads[qlen++] = pad(currQuad, currQuadBytes);
         }
@@ -1676,7 +1676,7 @@ public class UTF8DataInputJsonParser
                 currQuad = (currQuad << 8) | ch;
             } else {
                 if (qlen >= quads.length) {
-                    _quadBuffer = quads = growArrayBy(quads, quads.length);
+                    _quadBuffer = quads = _growNameDecodeBuffer(quads, quads.length);
                 }
                 quads[qlen++] = currQuad;
                 currQuad = ch;
@@ -1691,7 +1691,7 @@ public class UTF8DataInputJsonParser
         _nextByte = ch;
         if (currQuadBytes > 0) {
             if (qlen >= quads.length) {
-                _quadBuffer = quads = growArrayBy(quads, quads.length);
+                _quadBuffer = quads = _growNameDecodeBuffer(quads, quads.length);
             }
             quads[qlen++] = currQuad;
         }
@@ -1755,7 +1755,7 @@ public class UTF8DataInputJsonParser
                     // Ok, we'll need room for first byte right away
                     if (currQuadBytes >= 4) {
                         if (qlen >= quads.length) {
-                            _quadBuffer = quads = growArrayBy(quads, quads.length);
+                            _quadBuffer = quads = _growNameDecodeBuffer(quads, quads.length);
                         }
                         quads[qlen++] = currQuad;
                         currQuad = 0;
@@ -1771,7 +1771,7 @@ public class UTF8DataInputJsonParser
                         // need room for middle byte?
                         if (currQuadBytes >= 4) {
                             if (qlen >= quads.length) {
-                                _quadBuffer = quads = growArrayBy(quads, quads.length);
+                                _quadBuffer = quads = _growNameDecodeBuffer(quads, quads.length);
                             }
                             quads[qlen++] = currQuad;
                             currQuad = 0;
@@ -1813,7 +1813,7 @@ public class UTF8DataInputJsonParser
                 currQuad = (currQuad << 8) | ch;
             } else {
                 if (qlen >= quads.length) {
-                    _quadBuffer = quads = growArrayBy(quads, quads.length);
+                    _quadBuffer = quads = _growNameDecodeBuffer(quads, quads.length);
                 }
                 quads[qlen++] = currQuad;
                 currQuad = ch;
@@ -1824,7 +1824,7 @@ public class UTF8DataInputJsonParser
 
         if (currQuadBytes > 0) {
             if (qlen >= quads.length) {
-                _quadBuffer = quads = growArrayBy(quads, quads.length);
+                _quadBuffer = quads = _growNameDecodeBuffer(quads, quads.length);
             }
             quads[qlen++] = pad(currQuad, currQuadBytes);
         }
@@ -1885,7 +1885,7 @@ public class UTF8DataInputJsonParser
     private final String findName(int[] quads, int qlen, int lastQuad, int lastQuadBytes) throws StreamReadException
     {
         if (qlen >= quads.length) {
-            _quadBuffer = quads = growArrayBy(quads, quads.length);
+            _quadBuffer = quads = _growNameDecodeBuffer(quads, quads.length);
         }
         quads[qlen++] = pad(lastQuad, lastQuadBytes);
         String name = _symbols.findName(quads, qlen);
@@ -1909,6 +1909,7 @@ public class UTF8DataInputJsonParser
          */
         // 4 bytes per quad, except last one maybe less
         int byteLen = (qlen << 2) - 4 + lastQuadBytes;
+        _streamReadConstraints.validateNameLength(byteLen);
 
         /* And last one is not correctly aligned (leading zero bytes instead
          * need to shift a bit, instead of trailing). Only need to shift it
