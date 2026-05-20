@@ -3,9 +3,11 @@ package tools.jackson.core.unittest.json.async;
 import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.*;
-import tools.jackson.core.json.JsonFactory;
 import tools.jackson.core.async.ByteArrayFeeder;
 import tools.jackson.core.exc.StreamConstraintsException;
+import tools.jackson.core.json.JsonFactory;
+import tools.jackson.core.unittest.async.AsyncTestBase;
+import tools.jackson.core.unittest.testutil.AsyncReaderWrapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -17,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.fail;
  * {@code endOfInput()}).
  */
 class AsyncNumberLengthConsistencyTest
-    extends tools.jackson.core.JUnit5TestBase
+    extends AsyncTestBase
 {
     private static final int MAX_NUM_LEN = 1000;
     // Chunk size kept modest so the test runs quickly under CI but still exceeds
@@ -41,61 +43,13 @@ class AsyncNumberLengthConsistencyTest
      */
     @Test
     void integerPath_streamingChunks_rejectsBeyondMaxNumberLength() throws Exception {
-        try (JsonParser ap = STRICT_F.createNonBlockingByteArrayParser()) {
-            ByteArrayFeeder feeder = (ByteArrayFeeder) ap;
-
-            // Preamble: open an object and field name; no terminator for the value.
-            byte[] preamble = utf8Bytes("{\"v\":");
-            feeder.feedInput(preamble, 0, preamble.length);
-
-            // Drain tokens up to the point where the parser is starved.
-            JsonToken t;
-            while ((t = ap.nextToken()) != JsonToken.NOT_AVAILABLE) {
-                // Expect START_OBJECT and FIELD_NAME, then NOT_AVAILABLE.
-                if (t == null) {
-                    fail("Parser ended unexpectedly while draining preamble");
-                }
-            }
-
-            // Now stream digit-only chunks. No terminator, no endOfInput().
-            byte[] digits = new byte[CHUNK_SIZE];
-            for (int i = 0; i < digits.length; i++) {
-                digits[i] = (byte) ('1' + (i % 9));
-            }
-
-            int chunksFed = 0;
-            try {
-                for (int c = 0; c < MAX_CHUNKS; c++) {
-                    feeder.feedInput(digits, 0, digits.length);
-                    chunksFed++;
-                    JsonToken tt = ap.nextToken();
-                    if (tt != JsonToken.NOT_AVAILABLE) {
-                        fail("Expected NOT_AVAILABLE while streaming integer digits, got: " + tt);
-                    }
-                }
-                // Reaching here means the parser accepted more than CHUNK_SIZE *
-                // MAX_CHUNKS digits without raising — i.e. maxNumberLength was not
-                // enforced on the streaming integer path.
-                fail("Async parser accepted " + (CHUNK_SIZE * MAX_CHUNKS)
-                        + " integer digits with maxNumberLength=" + MAX_NUM_LEN
-                        + "; expected StreamConstraintsException");
-            } catch (StreamConstraintsException e) {
-                // Expected: validator must fire on a NOT_AVAILABLE exit once the
-                // accumulated integer length exceeds maxNumberLength.
-                String msg = String.valueOf(e.getMessage());
-                assertTrue(msg.contains("Number value length"),
-                        "Unexpected message: " + msg);
-                assertTrue(msg.contains("exceeds the maximum allowed"),
-                        "Unexpected message: " + msg);
-                // Must fire promptly, not after the full MAX_CHUNKS were accepted.
-                // (CHUNK_SIZE > MAX_NUM_LEN, so failure must occur on the first
-                // chunk past the limit; chunksFed == 1 in practice.)
-                assertTrue(chunksFed <= 2,
-                        "StreamConstraintsException raised too late: after " + chunksFed
-                                + " chunks of " + CHUNK_SIZE
-                                + " digits (maxNumberLength=" + MAX_NUM_LEN + ")");
-            }
-        }
+        // CHUNK_SIZE > MAX_NUM_LEN, so failure must occur on the first chunk past
+        // the limit; chunksFed == 1 in practice.
+        int chunksFed = streamDigitsUntilRejected("{\"v\":", CHUNK_SIZE);
+        assertTrue(chunksFed <= 2,
+                "StreamConstraintsException raised too late: after " + chunksFed
+                        + " chunks of " + CHUNK_SIZE
+                        + " digits (maxNumberLength=" + MAX_NUM_LEN + ")");
     }
 
     /**
@@ -104,45 +58,11 @@ class AsyncNumberLengthConsistencyTest
      */
     @Test
     void fractionPath_streamingChunks_rejectsBeyondMaxNumberLength() throws Exception {
-        try (JsonParser ap = STRICT_F.createNonBlockingByteArrayParser()) {
-            ByteArrayFeeder feeder = (ByteArrayFeeder) ap;
-
-            byte[] preamble = utf8Bytes("{\"v\":0.");
-            feeder.feedInput(preamble, 0, preamble.length);
-            JsonToken t;
-            while ((t = ap.nextToken()) != JsonToken.NOT_AVAILABLE) {
-                if (t == null) {
-                    fail("Parser ended unexpectedly while draining preamble");
-                }
-            }
-
-            byte[] digits = new byte[CHUNK_SIZE];
-            for (int i = 0; i < digits.length; i++) {
-                digits[i] = (byte) ('1' + (i % 9));
-            }
-
-            int chunksFed = 0;
-            try {
-                for (int c = 0; c < MAX_CHUNKS; c++) {
-                    feeder.feedInput(digits, 0, digits.length);
-                    chunksFed++;
-                    JsonToken tt = ap.nextToken();
-                    if (tt != JsonToken.NOT_AVAILABLE) {
-                        fail("Expected NOT_AVAILABLE while streaming fraction digits, got: " + tt);
-                    }
-                }
-                fail("Async parser accepted " + (CHUNK_SIZE * MAX_CHUNKS)
-                        + " fraction digits with maxNumberLength=" + MAX_NUM_LEN);
-            } catch (StreamConstraintsException e) {
-                String msg = String.valueOf(e.getMessage());
-                assertTrue(msg.contains("Number value length"),
-                        "Unexpected message: " + msg);
-                assertTrue(chunksFed <= 2,
-                        "StreamConstraintsException raised too late: after " + chunksFed
-                                + " chunks of " + CHUNK_SIZE
-                                + " digits (maxNumberLength=" + MAX_NUM_LEN + ")");
-            }
-        }
+        int chunksFed = streamDigitsUntilRejected("{\"v\":0.", CHUNK_SIZE);
+        assertTrue(chunksFed <= 2,
+                "StreamConstraintsException raised too late: after " + chunksFed
+                        + " chunks of " + CHUNK_SIZE
+                        + " digits (maxNumberLength=" + MAX_NUM_LEN + ")");
     }
 
     /**
@@ -159,50 +79,15 @@ class AsyncNumberLengthConsistencyTest
         // chunks that is the 11th chunk (1000 ok at chunk 10, 1100 > 1000 at chunk 11).
         final int expectedFailChunk = (MAX_NUM_LEN / smallChunk) + 1;
 
-        try (JsonParser ap = STRICT_F.createNonBlockingByteArrayParser()) {
-            ByteArrayFeeder feeder = (ByteArrayFeeder) ap;
-
-            byte[] preamble = utf8Bytes("{\"v\":");
-            feeder.feedInput(preamble, 0, preamble.length);
-            JsonToken t;
-            while ((t = ap.nextToken()) != JsonToken.NOT_AVAILABLE) {
-                if (t == null) {
-                    fail("Parser ended unexpectedly while draining preamble");
-                }
-            }
-
-            byte[] digits = new byte[smallChunk];
-            for (int i = 0; i < digits.length; i++) {
-                digits[i] = (byte) ('1' + (i % 9));
-            }
-
-            int chunksFed = 0;
-            try {
-                for (int c = 0; c < MAX_CHUNKS; c++) {
-                    feeder.feedInput(digits, 0, digits.length);
-                    chunksFed++;
-                    JsonToken tt = ap.nextToken();
-                    if (tt != JsonToken.NOT_AVAILABLE) {
-                        fail("Expected NOT_AVAILABLE while streaming integer digits, got: " + tt);
-                    }
-                }
-                fail("Async parser accepted " + (smallChunk * MAX_CHUNKS)
-                        + " integer digits with maxNumberLength=" + MAX_NUM_LEN
-                        + "; expected StreamConstraintsException");
-            } catch (StreamConstraintsException e) {
-                String msg = String.valueOf(e.getMessage());
-                assertTrue(msg.contains("Number value length"),
-                        "Unexpected message: " + msg);
-                // Must accumulate across several chunks before firing...
-                assertTrue(chunksFed > 1,
-                        "Exception fired on a single chunk; cross-chunk accumulation not exercised");
-                // ...and fire as soon as the limit is passed, not arbitrarily later.
-                assertTrue(chunksFed <= expectedFailChunk + 1,
-                        "StreamConstraintsException raised too late: after " + chunksFed
-                                + " chunks of " + smallChunk + " (expected ~" + expectedFailChunk
-                                + ", maxNumberLength=" + MAX_NUM_LEN + ")");
-            }
-        }
+        int chunksFed = streamDigitsUntilRejected("{\"v\":", smallChunk);
+        // Must accumulate across several chunks before firing...
+        assertTrue(chunksFed > 1,
+                "Exception fired on a single chunk; cross-chunk accumulation not exercised");
+        // ...and fire as soon as the limit is passed, not arbitrarily later.
+        assertTrue(chunksFed <= expectedFailChunk + 1,
+                "StreamConstraintsException raised too late: after " + chunksFed
+                        + " chunks of " + smallChunk + " (expected ~" + expectedFailChunk
+                        + ", maxNumberLength=" + MAX_NUM_LEN + ")");
     }
 
     /**
@@ -215,44 +100,18 @@ class AsyncNumberLengthConsistencyTest
     void integerPath_justUnderMaxNumberLength_parsesCleanly() throws Exception {
         // One short of the limit, so the validator must NOT fire.
         final int digitCount = MAX_NUM_LEN - 1;
-        StringBuilder sb = new StringBuilder(digitCount);
-        for (int i = 0; i < digitCount; i++) {
-            sb.append((char) ('1' + (i % 9)));
-        }
-        final String number = sb.toString();
+        final String number = digitString(digitCount);
 
-        try (JsonParser ap = STRICT_F.createNonBlockingByteArrayParser()) {
-            ByteArrayFeeder feeder = (ByteArrayFeeder) ap;
-
-            byte[] preamble = utf8Bytes("{\"v\":");
-            feeder.feedInput(preamble, 0, preamble.length);
-            JsonToken t;
-            while ((t = ap.nextToken()) != JsonToken.NOT_AVAILABLE) {
-                if (t == null) {
-                    fail("Parser ended unexpectedly while draining preamble");
-                }
-            }
-
-            // Feed the digits in small chunks (well under maxNumberLength) so the
-            // integer is accumulated across multiple _finishNumberIntegralPart resumes.
-            byte[] digits = utf8Bytes(number);
-            final int smallChunk = 100;
-            for (int off = 0; off < digits.length; off += smallChunk) {
-                int len = Math.min(smallChunk, digits.length - off);
-                feeder.feedInput(digits, off, off + len);
-                assertEquals(JsonToken.NOT_AVAILABLE, ap.nextToken(),
-                        "Expected NOT_AVAILABLE while streaming sub-limit integer digits");
-            }
-
-            // Terminate the value and signal end of input.
-            byte[] tail = utf8Bytes("}");
-            feeder.feedInput(tail, 0, tail.length);
-            feeder.endOfInput();
-
-            assertEquals(JsonToken.VALUE_NUMBER_INT, ap.nextToken(),
+        // Feed the whole document in small chunks (well under maxNumberLength) so the
+        // integer is accumulated across multiple _finishNumberIntegralPart resumes.
+        try (AsyncReaderWrapper r = asyncForBytes(STRICT_F, 100,
+                utf8Bytes("{\"v\":" + number + "}"), 0)) {
+            assertToken(JsonToken.START_OBJECT, r.nextToken());
+            assertToken(JsonToken.PROPERTY_NAME, r.nextToken());
+            assertToken(JsonToken.VALUE_NUMBER_INT, r.nextToken());
+            assertEquals(number, r.currentText(),
                     "Sub-limit integer should parse without StreamConstraintsException");
-            assertEquals(number, ap.getText());
-            assertEquals(JsonToken.END_OBJECT, ap.nextToken());
+            assertToken(JsonToken.END_OBJECT, r.nextToken());
         }
     }
 
@@ -271,12 +130,37 @@ class AsyncNumberLengthConsistencyTest
         // at chunk 11 (same boundary as the positive case).
         final int expectedFailChunk = (MAX_NUM_LEN / smallChunk) + 1;
 
-        try (JsonParser ap = STRICT_F.createNonBlockingByteArrayParser()) {
+        // Note trailing '-': routes the value through the negative-number path.
+        int chunksFed = streamDigitsUntilRejected("{\"v\":-", smallChunk);
+        // Must accumulate across several chunks before firing...
+        assertTrue(chunksFed > 1,
+                "Exception fired on a single chunk; cross-chunk accumulation not exercised");
+        // ...and fire at the same boundary as the positive case (sign excluded from the
+        // validated length), not one chunk earlier.
+        assertTrue(chunksFed >= expectedFailChunk,
+                "StreamConstraintsException raised too early (sign likely counted): after "
+                        + chunksFed + " chunks of " + smallChunk
+                        + " (expected ~" + expectedFailChunk + ", maxNumberLength=" + MAX_NUM_LEN + ")");
+        assertTrue(chunksFed <= expectedFailChunk + 1,
+                "StreamConstraintsException raised too late: after " + chunksFed
+                        + " chunks of " + smallChunk + " (expected ~" + expectedFailChunk
+                        + ", maxNumberLength=" + MAX_NUM_LEN + ")");
+    }
+
+    /**
+     * Feeds {@code preamble} (drained to {@code NOT_AVAILABLE}), then streams fixed-size
+     * digit-only chunks with no terminator and no {@code endOfInput()}, returning the
+     * number of chunks fed before {@link StreamConstraintsException} is raised. Fails the
+     * test if any token other than {@code NOT_AVAILABLE} appears while streaming, or if
+     * {@link #MAX_CHUNKS} chunks are accepted without the limit being enforced.
+     */
+    private int streamDigitsUntilRejected(String preamble, int chunkSize) throws Exception {
+        try (JsonParser ap = STRICT_F.createNonBlockingByteArrayParser(ObjectReadContext.empty())) {
             ByteArrayFeeder feeder = (ByteArrayFeeder) ap;
 
-            // Note trailing '-': routes the value through the negative-number path.
-            byte[] preamble = utf8Bytes("{\"v\":-");
-            feeder.feedInput(preamble, 0, preamble.length);
+            // Open object and field name (and number prefix); no terminator for the value.
+            byte[] pre = utf8Bytes(preamble);
+            feeder.feedInput(pre, 0, pre.length);
             JsonToken t;
             while ((t = ap.nextToken()) != JsonToken.NOT_AVAILABLE) {
                 if (t == null) {
@@ -284,42 +168,46 @@ class AsyncNumberLengthConsistencyTest
                 }
             }
 
-            byte[] digits = new byte[smallChunk];
-            for (int i = 0; i < digits.length; i++) {
-                digits[i] = (byte) ('1' + (i % 9));
-            }
-
+            byte[] digits = digitBytes(chunkSize);
             int chunksFed = 0;
             try {
                 for (int c = 0; c < MAX_CHUNKS; c++) {
                     feeder.feedInput(digits, 0, digits.length);
                     chunksFed++;
-                    JsonToken tt = ap.nextToken();
-                    if (tt != JsonToken.NOT_AVAILABLE) {
-                        fail("Expected NOT_AVAILABLE while streaming negative integer digits, got: " + tt);
-                    }
+                    assertToken(JsonToken.NOT_AVAILABLE, ap.nextToken());
                 }
-                fail("Async parser accepted " + (smallChunk * MAX_CHUNKS)
-                        + " negative integer digits with maxNumberLength=" + MAX_NUM_LEN
-                        + "; expected StreamConstraintsException");
             } catch (StreamConstraintsException e) {
+                // Expected: validator must fire on a NOT_AVAILABLE exit once the
+                // accumulated digit length exceeds maxNumberLength.
                 String msg = String.valueOf(e.getMessage());
                 assertTrue(msg.contains("Number value length"),
                         "Unexpected message: " + msg);
-                // Must accumulate across several chunks before firing...
-                assertTrue(chunksFed > 1,
-                        "Exception fired on a single chunk; cross-chunk accumulation not exercised");
-                // ...and fire at the same boundary as the positive case (sign excluded
-                // from the validated length), not one chunk earlier.
-                assertTrue(chunksFed >= expectedFailChunk,
-                        "StreamConstraintsException raised too early (sign likely counted): after "
-                                + chunksFed + " chunks of " + smallChunk
-                                + " (expected ~" + expectedFailChunk + ", maxNumberLength=" + MAX_NUM_LEN + ")");
-                assertTrue(chunksFed <= expectedFailChunk + 1,
-                        "StreamConstraintsException raised too late: after " + chunksFed
-                                + " chunks of " + smallChunk + " (expected ~" + expectedFailChunk
-                                + ", maxNumberLength=" + MAX_NUM_LEN + ")");
+                assertTrue(msg.contains("exceeds the maximum allowed"),
+                        "Unexpected message: " + msg);
+                return chunksFed;
             }
+            // Reaching here means the parser accepted chunkSize * MAX_CHUNKS digits
+            // without raising — i.e. maxNumberLength was not enforced while streaming.
+            fail("Async parser accepted " + (chunkSize * MAX_CHUNKS)
+                    + " digits with maxNumberLength=" + MAX_NUM_LEN
+                    + "; expected StreamConstraintsException");
+            return -1; // unreachable
         }
+    }
+
+    private static byte[] digitBytes(int count) {
+        byte[] digits = new byte[count];
+        for (int i = 0; i < count; i++) {
+            digits[i] = (byte) ('1' + (i % 9));
+        }
+        return digits;
+    }
+
+    private static String digitString(int count) {
+        StringBuilder sb = new StringBuilder(count);
+        for (int i = 0; i < count; i++) {
+            sb.append((char) ('1' + (i % 9)));
+        }
+        return sb.toString();
     }
 }
