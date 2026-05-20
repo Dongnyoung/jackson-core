@@ -14,6 +14,11 @@ a pure JSON library.
 === Releases ===
 ------------------------------------------------------------------------
 
+2.21.4 (not yet released)
+
+#1611: Apply number-length validator on streaming integer path of async parser
+ (fix by @tonghuaroot)
+
 2.21.3 (28-Apr-2026)
 
 #1581: `NonBlockingByteBufferParser`: Unexpected Illegal surrogate
@@ -135,6 +140,11 @@ No changes since 2.19.1
 #1421: Make `JsonReadContext` non-final
  (requested by Ilenia S)
  (fixed by @pjfanning)
+
+2.18.8 (not yet released)
+
+#1611: Apply number-length validator on streaming integer path of async parser
+ (fix by @tonghuaroot)
 
 2.18.7 (24-Apr-2026)
 

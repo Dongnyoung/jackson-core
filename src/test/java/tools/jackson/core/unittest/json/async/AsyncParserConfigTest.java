@@ -12,7 +12,7 @@ import tools.jackson.core.unittest.testutil.AsyncReaderWrapper;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class ConfigTest extends AsyncTestBase
+class AsyncParserConfigTest extends AsyncTestBase
 {
     private final JsonFactory DEFAULT_F = new JsonFactory();
 
@@ -23,7 +23,7 @@ class ConfigTest extends AsyncTestBase
     }
 
     @Test
-    void asyncParerDefaults() throws IOException
+    void asyncParserDefaults() throws IOException
     {
         byte[] data = _jsonDoc("[true,false]");
         AsyncReaderWrapper r = asyncForBytes(DEFAULT_F, 100, data, 0);
