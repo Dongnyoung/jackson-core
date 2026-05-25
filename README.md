@@ -98,14 +98,14 @@ JsonFactory factory = objectMapper.tokenStreamFactory();
 All reading is by using `JsonParser` (or its sub-classes, in case of data formats other than JSON),
 instance of which is constructed by `JsonFactory`.
 
-An example can be found from [Reading and Writing Event Streams](http://www.cowtowncoder.com/blog/archives/2009/01/entry_132.html)
+An example can be found from [Reading and Writing Event Streams](https://www.cowtowncoder.com/blog/archives/2009/01/entry_132.html)
 
 ## Usage, simple writing
 
 All writing is by using `JsonGenerator` (or its sub-classes, in case of data formats other than JSON),
 instance of which is constructed by `JsonFactory`:
 
-An example can be found from [Reading and Writing Event Streams](http://www.cowtowncoder.com/blog/archives/2009/01/entry_132.html)
+An example can be found from [Reading and Writing Event Streams](https://www.cowtowncoder.com/blog/archives/2009/01/entry_132.html)
 
 ## Processing limits
 
@@ -213,7 +213,7 @@ Jackson components are supported by the Jackson community through mailing lists,
 
 ### Enterprise support
 
-Available as part of the [Tidelift](https://tidelift.com/subscription/pkg/maven-com-fasterxml-jackson-core-jackson-databind) Subscription.
+Available as part of the [Tidelift](https://tidelift.com/subscription/pkg/maven-com-fasterxml-jackson-core-jackson-core) Subscription.
 
 The maintainers of `jackson-core` and thousands of other packages are working with Tidelift to deliver commercial support and maintenance for the open source dependencies you use to build your applications. Save time, reduce risk, and improve code health, while paying the maintainers of the exact dependencies you use. [Learn more.](https://tidelift.com/subscription/pkg/maven-com-fasterxml-jackson-core-jackson-core?utm_source=maven-com-fasterxml-jackson-core-jackson-core&utm_medium=referral&utm_campaign=enterprise&utm_term=repo)
 
