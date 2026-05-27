@@ -244,6 +244,8 @@ public abstract class NonBlockingUtf8JsonParserBase
             return _finishNumberLeadingZeroes();
         case MINOR_NUMBER_MINUSZERO:
             return _finishNumberLeadingNegZeroes();
+        case MINOR_NUMBER_PLUSZERO:
+            return _finishNumberLeadingPosZeroes();
         case MINOR_NUMBER_INTEGER_DIGITS:
             return _finishNumberIntegralPart(_textBuffer.getBufferWithoutReset(),
                     _textBuffer.getCurrentSegmentSize());
@@ -349,15 +351,21 @@ public abstract class NonBlockingUtf8JsonParserBase
             return _finishKeywordTokenWithEOF("false", _pending32, JsonToken.VALUE_FALSE);
         case MINOR_VALUE_TOKEN_NON_STD:
             return _finishNonStdTokenWithEOF(_nonStdTokenType, _pending32);
-        case MINOR_VALUE_TOKEN_ERROR: // case of "almost token", just need tokenize for error
+        case MINOR_VALUE_TOKEN_ERROR: // case of "almost token", just need to tokenize for error
             return _finishErrorTokenWithEOF();
 
         // Number-parsing states; valid stopping points, more explicit errors
         case MINOR_NUMBER_ZERO:
-        case MINOR_NUMBER_MINUSZERO:
-            // NOTE: does NOT retain possible leading minus-sign (can change if
-            // absolutely needs be)
             return _valueCompleteInt(0, "0");
+        case MINOR_NUMBER_MINUSZERO:
+            _numberNegative = true;
+            _valueCompleteInt(0, "-0");
+            _intLength = 1;
+            return _currToken;
+        case MINOR_NUMBER_PLUSZERO:
+            _valueCompleteInt(0, "+0");
+            _intLength = 1;
+            return _currToken;
         case MINOR_NUMBER_INTEGER_DIGITS:
             // Fine: just need to ensure we have value fully defined
             {
@@ -1643,7 +1651,10 @@ public abstract class NonBlockingUtf8JsonParserBase
         // numeric characters; likely legal separators, or, known illegal (letters).
         while (true) {
             if (_inputPtr >= _inputEnd) {
-                _minorState = negative ? MINOR_NUMBER_MINUSZERO : MINOR_NUMBER_ZERO;
+                // Use MINOR_NUMBER_PLUSZERO for explicit-plus paths so the sign is
+                // preserved on resumption (callers reach here via
+                // _finishNumberLeadingPosZeroes / _finishNumberLeadingNegZeroes only).
+                _minorState = negative ? MINOR_NUMBER_MINUSZERO : MINOR_NUMBER_PLUSZERO;
                 return _updateTokenToNA();
             }
             int ch = getNextUnsignedByteFromBuffer();
