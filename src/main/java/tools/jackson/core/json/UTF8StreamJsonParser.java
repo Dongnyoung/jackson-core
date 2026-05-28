@@ -1819,6 +1819,17 @@ public class UTF8StreamJsonParser
         char[] outBuf = _textBuffer.emptyAndGetCurrentSegment();
         // One special case: if first char is 0, must not be followed by a digit
         if (c == INT_0) {
+            // [core#707] JSON5 hexadecimal literal ('0x' / '0X')?
+            // Must be checked BEFORE _verifyNoLeadingZeroes(): leading zeros in
+            // hex digits are valid regardless of ALLOW_LEADING_ZEROS_FOR_NUMBERS.
+            if (_inputPtr < _inputEnd || _loadMore()) {
+                int peek = _inputBuffer[_inputPtr] & 0xFF;
+                if (peek == 'x' || peek == 'X') {
+                    ++_inputPtr;
+                    _checkHexNumbersAllowed(peek);
+                    return _finishHexNumber(false, outBuf, 0, peek);
+                }
+            }
             c = _verifyNoLeadingZeroes();
         }
         // Ok: we can first just add digit we saw first:
@@ -1873,6 +1884,15 @@ public class UTF8StreamJsonParser
                     return _parseFloatThatStartsWithPeriod(negative, true);
                 }
                 return _handleInvalidNumberStart(c, negative, true);
+            }
+            // [core#707] JSON5 hexadecimal literal ('0x' / '0X') with optional sign?
+            if (_inputPtr < _inputEnd || _loadMore()) {
+                int peek = _inputBuffer[_inputPtr] & 0xFF;
+                if (peek == 'x' || peek == 'X') {
+                    ++_inputPtr;
+                    _checkHexNumbersAllowed(peek);
+                    return _finishHexNumber(negative, outBuf, outPtr, peek);
+                }
             }
             c = _verifyNoLeadingZeroes();
         } else if (c > INT_9) {
@@ -1949,6 +1969,68 @@ public class UTF8StreamJsonParser
         // And there we have it!
         return resetInt(negative, intPartLength);
 
+    }
+
+    // [core#707] Finish parsing a JSON5 hexadecimal integer literal. On entry the
+    // optional sign (if any) is already in outBuf at indices [0..outPtr-1], and
+    // we have seen '0' followed by 'x'/'X' .
+    // We append '0' then the prefix char then all hex digits.
+    //
+    // @since 3.2
+    private final JsonToken _finishHexNumber(boolean neg, char[] outBuf, int outPtr,
+            int prefixChar)
+        throws JacksonException
+    {
+        // Prepend "0x" prefix
+        if (outPtr >= outBuf.length) {
+            outBuf = _textBuffer.finishCurrentSegment();
+            outPtr = 0;
+        }
+        outBuf[outPtr++] = '0';
+        if (outPtr >= outBuf.length) {
+            outBuf = _textBuffer.finishCurrentSegment();
+            outPtr = 0;
+        }
+        outBuf[outPtr++] = (char) prefixChar;
+
+        int hexLen = 0;
+        int c = 0;
+        boolean eof = false;
+
+        hex_loop:
+        while (true) {
+            if (_inputPtr >= _inputEnd && !_loadMore()) {
+                eof = true;
+                break hex_loop;
+            }
+            c = _inputBuffer[_inputPtr++] & 0xFF;
+            if (CharTypes.charToHex(c) < 0) {
+                break hex_loop;
+            }
+            ++hexLen;
+            if (outPtr >= outBuf.length) {
+                // Validate accumulated length at every segment boundary so that a
+                // pathological hex literal (e.g. millions of digits) is rejected
+                // early rather than after full buffering.
+                _streamReadConstraints.validateIntegerLength(hexLen);
+                outBuf = _textBuffer.finishCurrentSegment();
+                outPtr = 0;
+            }
+            outBuf[outPtr++] = (char) c;
+        }
+
+        if (hexLen == 0) {
+            return _reportUnexpectedNumberChar(c, _hexPrefixNotFollowedMessage((char) prefixChar));
+        }
+
+        if (!eof) {
+            --_inputPtr; // push back the terminating non-hex char
+            if (_streamReadContext.inRoot()) {
+                _verifyRootSpace(c);
+            }
+        }
+        _textBuffer.setCurrentLength(outPtr);
+        return resetIntHex(neg, hexLen);
     }
 
     // Method called when we have seen one zero, and want to ensure

@@ -1064,7 +1064,9 @@ public class UTF8DataInputJsonParser
             if (c <= INT_9 && c >= INT_0) { // skip if followed by digit
                 outPtr = 0;
             } else if (c == 'x' || c == 'X') {
-                return _handleInvalidNumberStart(c, false);
+                // [core#707] JSON5 hexadecimal literal?
+                _checkHexNumbersAllowed(c);
+                return _finishHexNumber(false, outBuf, 0, c);
             } else {
                 outBuf[0] = '0';
                 outPtr = 1;
@@ -1123,6 +1125,13 @@ public class UTF8DataInputJsonParser
             // One special case: if first char is 0 need to check no leading zeroes
             if (c == INT_0) {
                 c = _handleLeadingZeroes();
+                // [core#707] JSON5 hexadecimal literal with sign?
+                if (c == 'x' || c == 'X') {
+                    _checkHexNumbersAllowed(c);
+                    // outBuf currently holds [sign, '0']; the helper re-appends
+                    // '0' itself, so rewind outPtr to just after the sign.
+                    return _finishHexNumber(negative, outBuf, 1, c);
+                }
             } else if (c == INT_PERIOD) {
                 return _parseFloatThatStartsWithPeriod(negative, true);
             } else {
@@ -1158,6 +1167,52 @@ public class UTF8DataInputJsonParser
         }
         // And there we have it!
         return resetInt(negative, intLen);
+    }
+
+    // [core#707] Finish parsing a JSON5 hexadecimal integer literal. On entry the
+    // optional sign (if any) is already in outBuf at indices [0..outPtr-1] and
+    // the 'x'/'X' has already been consumed from the underlying DataInput.
+    // We append '0' + prefix char + all hex digits.
+    //
+    // @since 3.2
+    private final JsonToken _finishHexNumber(boolean neg, char[] outBuf, int outPtr,
+            int prefixChar) throws IOException
+    {
+        if (outPtr >= outBuf.length) {
+            outBuf = _textBuffer.finishCurrentSegment();
+            outPtr = 0;
+        }
+        outBuf[outPtr++] = '0';
+        if (outPtr >= outBuf.length) {
+            outBuf = _textBuffer.finishCurrentSegment();
+            outPtr = 0;
+        }
+        outBuf[outPtr++] = (char) prefixChar;
+
+        int hexLen = 0;
+        int c = readUnsignedByte();
+        while (CharTypes.charToHex(c) >= 0) {
+            ++hexLen;
+            if (outPtr >= outBuf.length) {
+                // Validate accumulated length at every segment boundary so that a
+                // pathological hex literal (e.g. millions of digits) is rejected
+                // early rather than after full buffering.
+                _streamReadConstraints.validateIntegerLength(hexLen);
+                outBuf = _textBuffer.finishCurrentSegment();
+                outPtr = 0;
+            }
+            outBuf[outPtr++] = (char) c;
+            c = readUnsignedByte();
+        }
+        if (hexLen == 0) {
+            return _reportUnexpectedNumberChar(c, _hexPrefixNotFollowedMessage((char) prefixChar));
+        }
+        _textBuffer.setCurrentLength(outPtr);
+        _nextByte = c;
+        if (_streamReadContext.inRoot()) {
+            _verifyRootSpace();
+        }
+        return resetIntHex(neg, hexLen);
     }
 
     /**
