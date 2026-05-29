@@ -14,7 +14,7 @@ a pure JSON library.
 === Releases ===
 ------------------------------------------------------------------------
 
-2.21.4 (not yet released)
+2.21.4 (28-May-2026)
 
 #1611: Apply number-length validator on streaming integer path of async parser
  (fix by @tonghuaroot)
@@ -141,7 +141,7 @@ No changes since 2.19.1
  (requested by Ilenia S)
  (fixed by @pjfanning)
 
-2.18.8 (not yet released)
+2.18.8 (28-May-2026)
 
 #1611: Apply number-length validator on streaming integer path of async parser
  (fix by @tonghuaroot)
