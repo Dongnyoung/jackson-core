@@ -14,9 +14,9 @@ a pure JSON library.
 === Releases ===
 ------------------------------------------------------------------------
 
-2.22.0 (not yet released)
+2.22.0 (31-May-2026)
 
-No change since 2.21
+No changes since 2.21
 
 2.21.4 (28-May-2026)
 
