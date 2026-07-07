@@ -22,6 +22,10 @@ No changes since 2.22
 
 No changes since 2.21
 
+2.21.5 (06-Jul-2026)
+
+No changes since 2.21.4
+
 2.21.4 (28-May-2026)
 
 #1611: Apply number-length validator on streaming integer path of async parser
