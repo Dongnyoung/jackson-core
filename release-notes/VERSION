@@ -43,7 +43,7 @@ No changes since 3.2
 #1598: Possible TOCTOU timing bug in `BufferRecycler`
  (implemented by @pjfanning)
 
-3.1.5 (not yet released)
+3.1.5 (07-Jul-2025)
 
 #1616: `JsonParserSequence` read methods no longer use Parsers beyond the first
  (reported by @stefnoten-aca)
