@@ -9,6 +9,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
 import tools.jackson.core.exc.StreamReadException;
+import tools.jackson.core.io.SerializedString;
 import tools.jackson.core.json.JsonFactory;
 import tools.jackson.core.json.JsonReadFeature;
 import tools.jackson.core.unittest.*;
@@ -230,6 +231,20 @@ class NonStandardNumberParsingTest
         _testLeadingPlusSignInDecimalAllowed(jsonFactory(), MODE_READER_THROTTLED);
     }
 
+    // [core#1630]: nextName()/nextFieldName() value-peeking must also honor
+    // ALLOW_LEADING_DECIMAL_POINT_FOR_NUMBERS (as nextToken() does)
+    @Test
+    void leadingDotAsFieldValueBytes() throws Exception {
+        _testLeadingDotAsFieldValue(jsonFactory(), MODE_INPUT_STREAM);
+        _testLeadingDotAsFieldValue(jsonFactory(), MODE_INPUT_STREAM_THROTTLED);
+    }
+
+    @Test
+    void leadingDotAsFieldValueReader() throws Exception {
+        _testLeadingDotAsFieldValue(jsonFactory(), MODE_READER);
+        _testLeadingDotAsFieldValue(jsonFactory(), MODE_READER_THROTTLED);
+    }
+
     @Test
     void leadingDotInNegativeDecimalAllowedAsync() throws Exception {
         _testLeadingDotInNegativeDecimalAllowed(jsonFactory(), MODE_DATA_INPUT);
@@ -289,6 +304,43 @@ class NonStandardNumberParsingTest
             assertEquals(125.0, p.getValueAsDouble());
             assertEquals("125", p.getDecimalValue().toString());
             assertEquals("125.", p.getString());
+        }
+    }
+
+    // [core#1630]: leading decimal point in value peeked by nextName()
+    private void _testLeadingDotAsFieldValue(JsonFactory f, int mode)
+    {
+        final String DOC = "{\"a\": .125}";
+
+        // 1) nextName() (no-arg) peeks the value after resolving name
+        try (JsonParser p = createParser(f, mode, DOC)) {
+            assertToken(JsonToken.START_OBJECT, p.nextToken());
+            assertEquals("a", p.nextName());
+            assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
+            assertEquals(0.125, p.getValueAsDouble());
+            assertEquals(".125", p.getString());
+            assertToken(JsonToken.END_OBJECT, p.nextToken());
+        }
+
+        // 2) nextName(SerializableString), matching name (the "Yes" fast path)
+        try (JsonParser p = createParser(f, mode, DOC)) {
+            assertToken(JsonToken.START_OBJECT, p.nextToken());
+            assertTrue(p.nextName(new SerializedString("a")));
+            assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
+            assertEquals(0.125, p.getValueAsDouble());
+            assertEquals(".125", p.getString());
+            assertToken(JsonToken.END_OBJECT, p.nextToken());
+        }
+
+        // 3) nextName(SerializableString), non-matching name (the "Maybe" path)
+        try (JsonParser p = createParser(f, mode, DOC)) {
+            assertToken(JsonToken.START_OBJECT, p.nextToken());
+            assertFalse(p.nextName(new SerializedString("b")));
+            assertEquals("a", p.currentName());
+            assertToken(JsonToken.VALUE_NUMBER_FLOAT, p.nextToken());
+            assertEquals(0.125, p.getValueAsDouble());
+            assertEquals(".125", p.getString());
+            assertToken(JsonToken.END_OBJECT, p.nextToken());
         }
     }
 
