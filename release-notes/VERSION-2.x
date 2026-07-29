@@ -23,6 +23,8 @@ No changes since 2.22
 #1642: Fix maxDocumentLength bypass in async parser single-feedInput() case
   [GHSA-2c4j-63jj-9fqr]
  (fix by Revanth M)
+#1643: Enforce maxNameLength incrementally in ReaderBasedJsonParser [GHSA-649p-m576-vr99]
+ (fix by @tinyb0y)
 
 2.22.1 (07-Jul-2026)
 2.22.0 (03-Jun-2026)
