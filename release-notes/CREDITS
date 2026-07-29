@@ -64,3 +64,8 @@ Max Paulus (@maxpaulus43)
 Antonin Janec (@xtonik)
  * Contributed #1576: Use Java 17 intrinstics for long multiplication
   (3.2.0)
+
+@tinyb0y
+ * Contributed #1643: Enforce maxNameLength incrementally in ReaderBasedJsonParser
+   [GHSA-649p-m576-vr99]
+  (3.1.6)
