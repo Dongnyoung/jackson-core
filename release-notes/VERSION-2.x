@@ -18,10 +18,22 @@ a pure JSON library.
 
 No changes since 2.22
 
+2.22.2 (not yet released)
+
+#1642: Fix maxDocumentLength bypass in async parser single-feedInput() case
+  [GHSA-2c4j-63jj-9fqr]
+ (fix by Revanth M)
+
 2.22.1 (07-Jul-2026)
 2.22.0 (03-Jun-2026)
 
 No changes since 2.21
+
+2.21.6 (not yet released)
+
+#1642: Fix maxDocumentLength bypass in async parser single-feedInput() case
+  [GHSA-2c4j-63jj-9fqr]
+ (fix by Revanth M)
 
 2.21.5 (06-Jul-2026)
 
@@ -153,6 +165,12 @@ No changes since 2.19.1
 #1421: Make `JsonReadContext` non-final
  (requested by Ilenia S)
  (fixed by @pjfanning)
+
+2.18.10 (not yet released)
+
+#1642: Fix maxDocumentLength bypass in async parser single-feedInput() case
+  [GHSA-2c4j-63jj-9fqr]
+ (fix by Revanth M)
 
 2.18.9 (07-Jul-2026)
 
