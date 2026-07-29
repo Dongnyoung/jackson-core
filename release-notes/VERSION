@@ -25,6 +25,9 @@ No changes since 3.1
   `JsonReadFeature.ALLOW_LEADING_DECIMAL_POINT_FOR_NUMBERS`
  (reported by @jng260)
  (fix by @cowtowncoder, w/ Claude code)
+#1642: Fix maxDocumentLength bypass in async parser single-feedInput() case
+  [GHSA-2c4j-63jj-9fqr]
+ (fix by Revanth M)
 
 3.1.5 (07-Jul-2025)
 
