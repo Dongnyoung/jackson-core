@@ -488,6 +488,11 @@ Revanth Meesala (@revanthmeesala)
    case [GHSA-2c4j-63jj-9fqr]
   (2.18.10)
 
+@tinyb0y
+ * Contributed #1643: Enforce maxNameLength incrementally in ReaderBasedJsonParser
+   [GHSA-649p-m576-vr99]
+  (2.18.10)
+
 Yanming Zhou (@quaff)
  * Requested #633: Allow skipping `RS` CTRL-CHAR to support JSON Text Sequences
   (2.19.0)
