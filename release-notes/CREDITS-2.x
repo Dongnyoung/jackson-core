@@ -483,6 +483,11 @@ Rohan Nagendra (@rohan-repos)
  * Reported #1555: Enforce StreamReadConstraints.maxNumberLength for non-blocking (async) parser
   (2.18.6)
 
+Revanth Meesala (@revanthmeesala)
+ * Contributed #1642: Fix maxDocumentLength bypass in async parser single-feedInput()
+   case [GHSA-2c4j-63jj-9fqr]
+  (2.18.10)
+
 Yanming Zhou (@quaff)
  * Requested #633: Allow skipping `RS` CTRL-CHAR to support JSON Text Sequences
   (2.19.0)
