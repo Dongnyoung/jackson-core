@@ -2,6 +2,7 @@ package tools.jackson.core.json.async;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
@@ -81,8 +82,10 @@ public class NonBlockingByteBufferJsonParser
         if (avail > 0) {
             final WritableByteChannel channel = Channels.newChannel(out);
             final ByteBuffer buffer = _inputBuffer.duplicate();
-            buffer.position(_inputPtr);
-            buffer.limit(_inputEnd);
+            // Use Buffer methods for Java 8/Android signature compatibility.
+            final Buffer baseBuffer = buffer;
+            baseBuffer.position(_inputPtr);
+            baseBuffer.limit(_inputEnd);
             try {
                 channel.write(buffer);
             } catch (IOException e) {
