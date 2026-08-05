@@ -39,4 +39,21 @@ class AsyncParserConfigTest extends AsyncTestBase
 
         p.close();
     }
+
+    @Test
+    void asyncByteBufferReleaseBuffered() throws IOException
+    {
+        byte[] data = _jsonDoc("[true,false]");
+        AsyncReaderWrapper r = asyncForByteBuffer(DEFAULT_F, 100, data, 0);
+        JsonParser p = r.parser();
+
+        assertToken(JsonToken.START_ARRAY, r.nextToken());
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        byte[] expected = utf8Bytes("true,false]");
+        assertEquals(expected.length, p.releaseBuffered(out));
+        assertArrayEquals(expected, out.toByteArray());
+
+        p.close();
+    }
 }

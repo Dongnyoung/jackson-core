@@ -80,8 +80,11 @@ public class NonBlockingByteBufferJsonParser
         final int avail = _inputEnd - _inputPtr;
         if (avail > 0) {
             final WritableByteChannel channel = Channels.newChannel(out);
+            final ByteBuffer buffer = _inputBuffer.duplicate();
+            buffer.position(_inputPtr);
+            buffer.limit(_inputEnd);
             try {
-                channel.write(_inputBuffer);
+                channel.write(buffer);
             } catch (IOException e) {
                 throw _wrapIOFailure(e);
             }
