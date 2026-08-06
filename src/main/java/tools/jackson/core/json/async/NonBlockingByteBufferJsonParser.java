@@ -81,11 +81,15 @@ public class NonBlockingByteBufferJsonParser
         final int avail = _inputEnd - _inputPtr;
         if (avail > 0) {
             final WritableByteChannel channel = Channels.newChannel(out);
+            // 05-Aug-2026, dnlee: [core#1646] Must write unconsumed range only, and via
+            //   duplicate() so that buffer caller fed us is left untouched.
+            //   NOTE: must call methods via `Buffer`, not `ByteBuffer`: covariant overrides
+            //   are Java 9+ and animal-sniffer checks us against Android SDK 26.
+            //   Also: limit() before position(), as former never fails for valid range.
             final ByteBuffer buffer = _inputBuffer.duplicate();
-            // Use Buffer methods for Java 8/Android signature compatibility.
             final Buffer baseBuffer = buffer;
-            baseBuffer.position(_inputPtr);
             baseBuffer.limit(_inputEnd);
+            baseBuffer.position(_inputPtr);
             try {
                 channel.write(buffer);
             } catch (IOException e) {
