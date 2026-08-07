@@ -214,7 +214,7 @@ David Nault (dnault@github)
   * Reported #531: Non-blocking parser reports incorrect locations when fed with
    non-zero offset
   (2.10.0)
-  * Reported 1412: More cases of Non-blocking parser reporting incorrect locations
+  * Reported #1412: More cases of Non-blocking parser reporting incorrect locations
    when fed with non-zero offset
   (2.19.0)
 
