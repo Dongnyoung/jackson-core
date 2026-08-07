@@ -516,3 +516,4 @@ Fawzi Essam (@iifawzi)
 
 Ilenia Salvadori (@isalvadori)
  * Requested #1421: Make `JsonReadContext` non-final
+  (2.19.0)
