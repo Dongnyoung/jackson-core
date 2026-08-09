@@ -78,4 +78,3 @@ DongNyoung Lee (@Dongnyoung)
  * Reported, fixed #1646: Non-blocking ByteBuffer parser `releaseBuffered()` can write
    already-consumed bytes
   (3.3.0)
-
