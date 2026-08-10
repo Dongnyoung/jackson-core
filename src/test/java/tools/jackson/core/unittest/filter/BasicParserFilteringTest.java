@@ -470,6 +470,38 @@ class BasicParserFilteringTest extends JacksonCoreTestBase
     }
 
     @Test
+    void includeNonNullWithNestedObjectContext() throws Exception
+    {
+        JsonParser p0 = JSON_F.createParser(ObjectReadContext.empty(), """
+                {"a":{"b":1}}""");
+        JsonParser p = new FilteringParserDelegate(p0,
+                new TokenFilter() { },
+                Inclusion.INCLUDE_NON_NULL,
+                true // multipleMatches
+        );
+
+        assertToken(JsonToken.START_OBJECT, p.nextToken());
+        assertTrue(p.streamReadContext().inObject());
+
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
+        assertEquals("a", p.currentName());
+
+        assertToken(JsonToken.START_OBJECT, p.nextToken());
+        assertTrue(p.streamReadContext().inObject());
+        assertEquals("a", p.currentName());
+
+        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
+        assertEquals("b", p.currentName());
+
+        assertToken(JsonToken.VALUE_NUMBER_INT, p.nextToken());
+        assertEquals(1, p.getIntValue());
+
+        assertToken(JsonToken.END_OBJECT, p.nextToken());
+        assertToken(JsonToken.END_OBJECT, p.nextToken());
+        assertNull(p.nextToken());
+    }
+
+    @Test
     void noMatchFiltering1() throws Exception
     {
         String jsonString = a2q("{'a':123,'array':[1,2],'ob':{'value0':2,'value':3,'value2':4},'b':true}");
