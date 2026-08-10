@@ -763,7 +763,7 @@ public class FilteringParserDelegate extends JsonParserDelegate
                     return _nextBuffered(buffRoot);
                 } else if (f != null && _inclusion == Inclusion.INCLUDE_NON_NULL) {
                     // TODO don't count as match?
-                    _headContext = _headContext.createChildArrayContext(f, null, true);
+                    _headContext = _headContext.createChildObjectContext(f, null, true);
                     return _nextBuffered(buffRoot);
                 }
                 _headContext = _headContext.createChildObjectContext(f, null, false);
