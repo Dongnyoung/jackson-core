@@ -472,8 +472,8 @@ class BasicParserFilteringTest extends JacksonCoreTestBase
     @Test
     void includeNonNullWithNestedObjectContext() throws Exception
     {
-        JsonParser p0 = JSON_F.createParser(ObjectReadContext.empty(), """
-                {"a":{"b":1}}""");
+        JsonParser p0 = JSON_F.createParser(ObjectReadContext.empty(),
+                a2q("{'a':{'b':1}}"));
         JsonParser p = new FilteringParserDelegate(p0,
                 new TokenFilter() { },
                 Inclusion.INCLUDE_NON_NULL,
