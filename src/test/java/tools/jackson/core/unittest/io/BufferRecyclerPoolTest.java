@@ -2,6 +2,8 @@ package tools.jackson.core.unittest.io;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.concurrent.*;
 
 import org.junit.jupiter.api.Test;
 
@@ -119,6 +121,44 @@ class BufferRecyclerPoolTest extends JacksonCoreTestBase
     }
 
     @Test
+    void boundedPoolConcurrentParserGeneratorUseDoesNotExceedCapacity() throws Exception {
+        final int capacity = 4;
+        final int threadCount = 8;
+        final int iterations = 1_000;
+
+        RecyclerPool<BufferRecycler> pool = JsonRecyclerPools.newBoundedPool(capacity);
+        JsonFactory jsonFactory = JsonFactory.builder()
+                .recyclerPool(pool)
+                .build();
+
+        ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+        try {
+            ArrayList<Future<?>> futures = new ArrayList<>();
+            for (int i = 0; i < threadCount; ++i) {
+                futures.add(executor.submit(() -> {
+                    for (int j = 0; j < iterations; ++j) {
+                        read(jsonFactory);
+                        write("test", jsonFactory, 6);
+
+                        if (pool.pooledCount() > capacity) {
+                            throw new IllegalStateException("Bounded pool exceeded capacity");
+                        }
+                    }
+                    return null;
+                }));
+            }
+
+            for (Future<?> future : futures) {
+                future.get();
+            }
+        } finally {
+            executor.shutdownNow();
+        }
+
+        assertTrue(pool.pooledCount() <= capacity);
+    }
+
+    @Test
     void pluggingPool() throws Exception {
         checkBufferRecyclerPoolImpl(new TestPool(), true, true);
     }
@@ -152,6 +192,13 @@ class BufferRecyclerPoolTest extends JacksonCoreTestBase
             assertNotSame(usedBufferRecycler, br2);
         } else {
             assertFalse(pool.clear());
+        }
+    }
+
+    private void read(JsonFactory jsonFactory) throws Exception {
+        try (JsonParser p = createParser(jsonFactory, MODE_INPUT_STREAM,
+                a2q("{'a':123,'b':'foobar'}"))) {
+            while (p.nextToken() != null) { }
         }
     }
 
