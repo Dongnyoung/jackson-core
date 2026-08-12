@@ -88,6 +88,18 @@ class SymbolTableMergingTest
         assertEquals(3, f.charSymbolCount());
     }
 
+    @Test
+    void staleByteSymbolsWithClose() throws Exception
+    {
+        _testStaleSymbolsWithClose(true);
+    }
+
+    @Test
+    void staleCharSymbolsWithClose() throws Exception
+    {
+        _testStaleSymbolsWithClose(false);
+    }
+
     /*
     /**********************************************************
     /* Helper methods
@@ -109,6 +121,23 @@ class SymbolTableMergingTest
         p.close();
         // but should after close
         assertEquals(2, useBytes ? f.byteSymbolCount() : f.charSymbolCount());
+    }
+
+    private void _testStaleSymbolsWithClose(boolean useBytes) throws IOException
+    {
+        MyJsonFactory f = new MyJsonFactory();
+
+        JsonParser smaller = _getParser(f, "{ \"a\" : 1 }", useBytes);
+        assertToken(JsonToken.START_OBJECT, smaller.nextToken());
+        assertToken(JsonToken.PROPERTY_NAME, smaller.nextToken());
+
+        JsonParser larger = _getParser(f, "{ \"a\" : 1, \"b\" : 2, \"c\" : 3 }", useBytes);
+        while (larger.nextToken() != null) { }
+        larger.close();
+        assertEquals(3, useBytes ? f.byteSymbolCount() : f.charSymbolCount());
+
+        smaller.close();
+        assertEquals(3, useBytes ? f.byteSymbolCount() : f.charSymbolCount());
     }
 
     private JsonParser _getParser(MyJsonFactory f, String doc, boolean useBytes) throws IOException
