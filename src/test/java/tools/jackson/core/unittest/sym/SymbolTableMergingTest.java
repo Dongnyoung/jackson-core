@@ -35,6 +35,8 @@ class SymbolTableMergingTest
     }
 
     final static String JSON = "{ \"a\" : 3, \"aaa\" : 4, \"_a\" : 0 }";
+    final static String STALE_SMALL_DOC = a2q("{'a':1}");
+    final static String STALE_LARGE_DOC = a2q("{'a':1,'b':2,'c':3}");
 
     @Test
     void byteSymbolsWithClose() throws Exception
@@ -127,11 +129,11 @@ class SymbolTableMergingTest
     {
         MyJsonFactory f = new MyJsonFactory();
 
-        JsonParser smaller = _getParser(f, "{ \"a\" : 1 }", useBytes);
+        JsonParser smaller = _getParser(f, STALE_SMALL_DOC, useBytes);
         assertToken(JsonToken.START_OBJECT, smaller.nextToken());
         assertToken(JsonToken.PROPERTY_NAME, smaller.nextToken());
 
-        JsonParser larger = _getParser(f, "{ \"a\" : 1, \"b\" : 2, \"c\" : 3 }", useBytes);
+        JsonParser larger = _getParser(f, STALE_LARGE_DOC, useBytes);
         while (larger.nextToken() != null) { }
         larger.close();
         assertEquals(3, useBytes ? f.byteSymbolCount() : f.charSymbolCount());
@@ -144,7 +146,7 @@ class SymbolTableMergingTest
     {
         JsonParser p;
         if (useBytes) {
-            p = f.createParser(ObjectReadContext.empty(), doc.getBytes("UTF-8"));
+            p = f.createParser(ObjectReadContext.empty(), utf8Bytes(doc));
             assertEquals(UTF8StreamJsonParser.class, p.getClass());
             assertEquals(0, f.byteSymbolCount());
         } else {
