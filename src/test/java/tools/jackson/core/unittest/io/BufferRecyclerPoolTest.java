@@ -41,6 +41,37 @@ class BufferRecyclerPoolTest extends JacksonCoreTestBase
     }
 
     @Test
+    void boundedPoolDoesNotExceedCapacity() {
+        RecyclerPool<BufferRecycler> pool = JsonRecyclerPools.newBoundedPool(2);
+
+        BufferRecycler br1 = pool.acquireAndLinkPooled();
+        BufferRecycler br2 = pool.acquireAndLinkPooled();
+        BufferRecycler br3 = pool.acquireAndLinkPooled();
+
+        br1.releaseToPool();
+        br2.releaseToPool();
+        br3.releaseToPool();
+
+        assertEquals(2, pool.pooledCount());
+    }
+
+    @Test
+    void boundedPoolClearDropsRetainedRecyclers() {
+        RecyclerPool<BufferRecycler> pool = JsonRecyclerPools.newBoundedPool(2);
+
+        BufferRecycler br1 = pool.acquireAndLinkPooled();
+        BufferRecycler br2 = pool.acquireAndLinkPooled();
+
+        br1.releaseToPool();
+        br2.releaseToPool();
+
+        assertEquals(2, pool.pooledCount());
+
+        assertTrue(pool.clear());
+        assertEquals(0, pool.pooledCount());
+    }
+
+    @Test
     void pluggingPool() throws Exception {
         checkBufferRecyclerPoolImpl(new TestPool(), true, true);
     }
