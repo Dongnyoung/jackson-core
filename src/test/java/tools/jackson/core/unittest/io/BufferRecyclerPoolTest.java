@@ -6,8 +6,10 @@ import java.io.OutputStream;
 import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.JsonParser;
 import tools.jackson.core.ObjectWriteContext;
 import tools.jackson.core.base.GeneratorBase;
+import tools.jackson.core.io.IOContext;
 import tools.jackson.core.json.JsonFactory;
 import tools.jackson.core.unittest.*;
 import tools.jackson.core.util.BufferRecycler;
@@ -69,6 +71,51 @@ class BufferRecyclerPoolTest extends JacksonCoreTestBase
 
         assertTrue(pool.clear());
         assertEquals(0, pool.pooledCount());
+    }
+
+    @Test
+    void bufferRecyclerReleaseToPoolIsIdempotent() {
+        TestPool pool = new TestPool();
+        BufferRecycler recycler = pool.acquireAndLinkPooled();
+
+        recycler.releaseToPool();
+        recycler.releaseToPool();
+
+        assertEquals(1, pool.pooledCount());
+    }
+
+    @Test
+    void parserCloseReleasesRecyclerOnce() throws Exception {
+        TestPool pool = new TestPool();
+        JsonFactory jsonFactory = JsonFactory.builder()
+                .recyclerPool(pool)
+                .build();
+
+        JsonParser p = createParser(jsonFactory, MODE_INPUT_STREAM,
+                a2q("{'a':123,'b':'foobar'}"));
+        p.nextToken();
+        p.close();
+        p.close();
+
+        assertEquals(1, pool.pooledCount());
+    }
+
+    @Test
+    void generatorCloseReleasesRecyclerOnce() throws Exception {
+        TestPool pool = new TestPool();
+        JsonFactory jsonFactory = JsonFactory.builder()
+                .recyclerPool(pool)
+                .build();
+
+        JsonGenerator gen = jsonFactory.createGenerator(ObjectWriteContext.empty(),
+                new NopOutputStream());
+        IOContext ioContext = ((GeneratorBase) gen).ioContext();
+        gen.writeString("test");
+        gen.close();
+        gen.close();
+        ioContext.close();
+
+        assertEquals(1, pool.pooledCount());
     }
 
     @Test
