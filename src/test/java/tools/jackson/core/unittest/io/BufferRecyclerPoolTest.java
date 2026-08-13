@@ -3,7 +3,9 @@ package tools.jackson.core.unittest.io;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Set;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
 
@@ -11,7 +13,6 @@ import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.ObjectWriteContext;
 import tools.jackson.core.base.GeneratorBase;
-import tools.jackson.core.io.IOContext;
 import tools.jackson.core.json.JsonFactory;
 import tools.jackson.core.unittest.*;
 import tools.jackson.core.util.BufferRecycler;
@@ -111,17 +112,15 @@ class BufferRecyclerPoolTest extends JacksonCoreTestBase
 
         JsonGenerator gen = jsonFactory.createGenerator(ObjectWriteContext.empty(),
                 new NopOutputStream());
-        IOContext ioContext = ((GeneratorBase) gen).ioContext();
         gen.writeString("test");
         gen.close();
         gen.close();
-        ioContext.close();
 
         assertEquals(1, pool.pooledCount());
     }
 
     @Test
-    void boundedPoolConcurrentParserGeneratorUseDoesNotExceedCapacity() throws Exception {
+    void boundedPoolConcurrentUseDoesNotShareRecyclers() throws Exception {
         final int capacity = 4;
         final int threadCount = 8;
         final int iterations = 1_000;
@@ -131,6 +130,16 @@ class BufferRecyclerPoolTest extends JacksonCoreTestBase
                 .recyclerPool(pool)
                 .build();
 
+        // Recyclers held by a live generator: pool must never hand the same instance
+        // to two holders at once. `BufferRecycler.withPool()` already throws on an
+        // overlapping acquisition; this tracks it independently, and also covers
+        // sharing that would slip past that linkage check. Identity-based since
+        // `BufferRecycler` does not override equals()/hashCode(). Parsers exercise the
+        // pool too, but only `GeneratorBase` exposes its `IOContext`, so only
+        // generators can be tracked.
+        final Set<BufferRecycler> inUse = ConcurrentHashMap.newKeySet();
+        final AtomicInteger sharedCount = new AtomicInteger();
+
         ExecutorService executor = Executors.newFixedThreadPool(threadCount);
         try {
             ArrayList<Future<?>> futures = new ArrayList<>();
@@ -138,11 +147,18 @@ class BufferRecyclerPoolTest extends JacksonCoreTestBase
                 futures.add(executor.submit(() -> {
                     for (int j = 0; j < iterations; ++j) {
                         read(jsonFactory);
-                        write("test", jsonFactory, 6);
 
-                        if (pool.pooledCount() > capacity) {
-                            throw new IllegalStateException("Bounded pool exceeded capacity");
+                        NopOutputStream out = new NopOutputStream();
+                        JsonGenerator gen = jsonFactory.createGenerator(
+                                ObjectWriteContext.empty(), out);
+                        BufferRecycler br = ((GeneratorBase) gen).ioContext().bufferRecycler();
+                        if (!inUse.add(br)) {
+                            sharedCount.incrementAndGet();
                         }
+                        gen.writeString("test");
+                        // Must stop tracking before close(), which returns it to the pool
+                        inUse.remove(br);
+                        gen.close();
                     }
                     return null;
                 }));
@@ -155,7 +171,13 @@ class BufferRecyclerPoolTest extends JacksonCoreTestBase
             executor.shutdownNow();
         }
 
-        assertTrue(pool.pooledCount() <= capacity);
+        assertEquals(0, sharedCount.get(),
+                "BufferRecycler handed out to more than one holder at a time");
+        assertEquals(0, inUse.size());
+        // Bounded queue must retain releases, up to but not beyond capacity
+        int pooled = pool.pooledCount();
+        assertTrue(pooled > 0 && pooled <= capacity,
+                "Unexpected pooledCount(): "+pooled);
     }
 
     @Test
