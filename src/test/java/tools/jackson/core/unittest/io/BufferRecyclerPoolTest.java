@@ -87,37 +87,8 @@ class BufferRecyclerPoolTest extends JacksonCoreTestBase
         assertEquals(1, pool.pooledCount());
     }
 
-    @Test
-    void parserCloseReleasesRecyclerOnce() throws Exception {
-        TestPool pool = new TestPool();
-        JsonFactory jsonFactory = JsonFactory.builder()
-                .recyclerPool(pool)
-                .build();
-
-        JsonParser p = createParser(jsonFactory, MODE_INPUT_STREAM,
-                a2q("{'a':123,'b':'foobar'}"));
-        p.nextToken();
-        p.close();
-        p.close();
-
-        assertEquals(1, pool.pooledCount());
-    }
-
-    @Test
-    void generatorCloseReleasesRecyclerOnce() throws Exception {
-        TestPool pool = new TestPool();
-        JsonFactory jsonFactory = JsonFactory.builder()
-                .recyclerPool(pool)
-                .build();
-
-        JsonGenerator gen = jsonFactory.createGenerator(ObjectWriteContext.empty(),
-                new NopOutputStream());
-        gen.writeString("test");
-        gen.close();
-        gen.close();
-
-        assertEquals(1, pool.pooledCount());
-    }
+    // NOTE: parser/generator close() releasing the recycler exactly once is covered
+    // by `JsonBufferRecyclersTest`, for all pool implementations
 
     @Test
     void boundedPoolConcurrentUseDoesNotShareRecyclers() throws Exception {
