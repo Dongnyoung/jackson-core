@@ -469,6 +469,7 @@ class BasicParserFilteringTest extends JacksonCoreTestBase
         assertEquals(2, p.getMatchCount());
     }
 
+    // [core#1651]: buffered START_OBJECT must create Object (not Array) context
     @Test
     void includeNonNullWithNestedObjectContext() throws Exception
     {

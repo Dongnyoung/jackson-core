@@ -214,7 +214,7 @@ David Nault (dnault@github)
   * Reported #531: Non-blocking parser reports incorrect locations when fed with
    non-zero offset
   (2.10.0)
-  * Reported 1412: More cases of Non-blocking parser reporting incorrect locations
+  * Reported #1412: More cases of Non-blocking parser reporting incorrect locations
    when fed with non-zero offset
   (2.19.0)
 
@@ -520,6 +520,10 @@ Mike Pedersen (@mpdncrwd)
  * Reported #1581: `NonBlockingByteBufferParser`: Unexpected Illegal surrogate
    character when parsing field names
   (2.21.3)
+
+DongNyoung Lee (@Dongnyoung)
+ * Contributed #1651: Fix Object context handling for buffered `INCLUDE_NON_NULL` tokens
+  (2.21.6)
 
 Patrick Strawderman (@kilink)
  * Requested #1622: `UTF8JsonGenerator.writeBinary()` should allocate buffer
