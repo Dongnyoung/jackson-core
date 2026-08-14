@@ -531,6 +531,10 @@ Mike Pedersen (@mpdncrwd)
    character when parsing field names
   (2.21.3)
 
+DongNyoung Lee (@Dongnyoung)
+ * Contributed #1651: Fix Object context handling for buffered `INCLUDE_NON_NULL` tokens
+  (2.21.6)
+
 Patrick Strawderman (@kilink)
  * Requested #1622: `UTF8JsonGenerator.writeBinary()` should allocate buffer
   based on supplied length
