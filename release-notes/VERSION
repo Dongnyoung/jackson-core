@@ -68,6 +68,8 @@ No changes since 3.2.0
  (fix by Revanth M)
 #1643: Enforce maxNameLength incrementally in ReaderBasedJsonParser [CVE-2026-68498]
  (fix by @tinyb0y)
+#1651: Fix object context handling for buffered `INCLUDE_NON_NULL` tokens
+ (contributed by @Dongnyoung)
 
 3.1.5 (07-Jul-2026)
 
