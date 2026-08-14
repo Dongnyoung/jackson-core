@@ -501,6 +501,20 @@ class BasicParserFilteringTest extends JacksonCoreTestBase
         assertNull(p.nextToken());
     }
 
+    // [core#1651]: buffered START_OBJECT with INCLUDE_ALL filter must replay
+    // the enclosing (buffered) Property name
+    @Test
+    void includeNonNullWithBufferedIncludeAllObject() throws Exception
+    {
+        JsonParser p0 = JSON_F.createParser(ObjectReadContext.empty(),
+                a2q("{'a':{'b':1}}"));
+        FilteringParserDelegate p = new FilteringParserDelegate(p0,
+                new StrictNameMatchFilter("a"),
+                Inclusion.INCLUDE_NON_NULL, true);
+        String result = readAndWrite(JSON_F, p);
+        assertEquals(a2q("{'a':{'b':1}}"), result);
+    }
+
     @Test
     void noMatchFiltering1() throws Exception
     {

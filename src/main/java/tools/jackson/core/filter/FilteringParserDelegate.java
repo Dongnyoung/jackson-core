@@ -741,8 +741,10 @@ public class FilteringParserDelegate extends JsonParserDelegate
             case ID_START_OBJECT:
                 f = _itemFilter;
                 if (f == TokenFilter.INCLUDE_ALL) {
+                    // 14-Aug-2026, tatu: [core#1651] Must replay buffered tokens
+                    //    (like enclosing Property name), not just return START_OBJECT
                     _headContext = _headContext.createChildObjectContext(f, null, true);
-                    return t;
+                    return _nextBuffered(buffRoot);
                 }
                 if (f == null) { // does this occur?
                     delegate.skipChildren();
