@@ -54,3 +54,7 @@ Revanth Meesala (@revanthmeesala)
  * Contributed #1643: Enforce maxNameLength incrementally in ReaderBasedJsonParser
    [GHSA-649p-m576-vr99]
   (3.1.6)
+
+Lee Dongnyoung (@DongNyoung)
+ * Contributed #1651: Fix object context handling for buffered `INCLUDE_NON_NULL` tokens
+  (3.1.6)
