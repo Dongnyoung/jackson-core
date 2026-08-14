@@ -77,7 +77,7 @@ No changes since 3.2.0
 #1643: Enforce maxNameLength incrementally in ReaderBasedJsonParser [CVE-2026-68498]
  (fix by @tinyb0y)
 
-3.1.5 (07-Jul-2025)
+3.1.5 (07-Jul-2026)
 
 #1616: `JsonParserSequence` read methods no longer use Parsers beyond the first
  (reported by @stefnoten-aca)
