@@ -521,4 +521,3 @@ Ilenia Salvadori (@isalvadori)
 Vitor Pamplona (@vitorpamplona)
  * Contributed fix for #1473: Bug with Surrogates + Segments in the `UTF8JsonGenerator`
   (2.20.1)
-
