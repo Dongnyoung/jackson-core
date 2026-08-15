@@ -2203,6 +2203,10 @@ public class UTF8StreamJsonParser
             _currInputRowStart = _inputPtr;
             return;
         }
+
+        if (ch > 0x7F) {
+            ch = _decodeCharForError(ch);
+        }
         _reportMissingRootWS(ch);
     }
 
