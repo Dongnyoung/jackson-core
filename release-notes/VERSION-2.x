@@ -68,7 +68,7 @@ No changes since 2.19.1
  (requested by Ilenia S)
  (fixed by @pjfanning)
 
-2.18.10 (not yet released)
+2.18.10 (15-Aug-2026)
 
 #1642: Fix maxDocumentLength bypass in async parser single-feedInput() case
   [GHSA-2c4j-63jj-9fqr]
