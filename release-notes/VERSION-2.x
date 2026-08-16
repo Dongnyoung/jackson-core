@@ -21,7 +21,7 @@ a pure JSON library.
  (requested by @kilink)
  (contributed by @seonwooj0810)
 
-2.22.2 (not yet released)
+2.22.2 (16-Aug-2026)
 
 #1642: Fix maxDocumentLength bypass in async parser single-feedInput() case
   [GHSA-2c4j-63jj-9fqr]
