@@ -1343,8 +1343,13 @@ public class UTF8DataInputJsonParser
             return;
         }
         if (ch > 0x7F) {
+            // 19-Aug-2026, tatu: [core#1664] Decode multi-byte character for better
+            //   error message; but if input ends mid-sequence, report lead byte as-is
+            //   (content is malformed here regardless of what would follow)
             try {
                 ch = _decodeCharForError(ch);
+            } catch (EOFException e) {
+                ; // fine, fall through to report lead byte
             } catch (IOException e) {
                 throw _wrapIOFailure(e);
             }

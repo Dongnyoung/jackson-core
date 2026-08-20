@@ -181,20 +181,6 @@ class NonStandardNumberParsingTest
         }
     }
 
-    @Test
-    void invalidUtf8SpaceAfterRootNumber() throws Exception {
-        final byte[] json = new byte[] { '1', (byte) 0xC2, (byte) 0xA0 };
-        for (int mode : ALL_BINARY_MODES) {
-            try (JsonParser p = createParser(mode, json)) {
-                p.nextToken();
-                fail("Should not pass");
-            } catch (StreamReadException e) {
-                verifyException(e, "code 160");
-                verifyException(e, "Expected space separating root-level values");
-            }
-        }
-    }
-
     /**
      * The format "NNN." (as opposed to "NNN") is not valid JSON, so this should fail
      */

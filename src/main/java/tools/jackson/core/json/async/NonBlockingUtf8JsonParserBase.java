@@ -3341,7 +3341,51 @@ public abstract class NonBlockingUtf8JsonParserBase
             _currInputRowStart = _inputPtr;
             return;
         }
+        if (ch > 0x7F) {
+            ch = _decodeCharForError(ch);
+        }
         _reportMissingRootWS(ch);
+    }
+
+    /**
+     * Helper method for decoding multi-byte UTF-8 character for error reporting
+     * purposes: unlike blocking parsers we cannot wait for more input, so if the
+     * full sequence is not (yet) in the buffer we report the lead byte as-is.
+     *
+     * @param firstByte Lead byte of the character; input pointer is past it
+     *
+     * @return Decoded character (code point), or lead byte if not fully available
+     *
+     * @throws JacksonException for invalid UTF-8 byte sequences
+     */
+    // 19-Aug-2026, tatu: [core#1664]
+    private final int _decodeCharForError(int firstByte) throws JacksonException
+    {
+        final int c = firstByte & 0xFF;
+        final int needed;
+
+        if ((c & 0xE0) == 0xC0) { // 2 bytes (0x0080 - 0x07FF)
+            needed = 1;
+        } else if ((c & 0xF0) == 0xE0) { // 3 bytes (0x0800 - 0xFFFF)
+            needed = 2;
+        } else if ((c & 0xF8) == 0xF0) { // 4 bytes; double-char with surrogates and all...
+            needed = 3;
+        } else {
+            _reportInvalidInitial(c);
+            return c; // never gets here
+        }
+        if ((_inputPtr + needed) > _inputEnd) { // not enough input: report lead byte as-is
+            return c;
+        }
+        switch (needed) {
+        case 1:
+            return _decodeUTF8_2(c, getByteFromBuffer(_inputPtr));
+        case 2:
+            return _decodeUTF8_3(c, getByteFromBuffer(_inputPtr), getByteFromBuffer(_inputPtr+1));
+        default:
+            return _decodeUTF8_4(c, getByteFromBuffer(_inputPtr), getByteFromBuffer(_inputPtr+1),
+                    getByteFromBuffer(_inputPtr+2)) + 0x10000;
+        }
     }
 
     /*
