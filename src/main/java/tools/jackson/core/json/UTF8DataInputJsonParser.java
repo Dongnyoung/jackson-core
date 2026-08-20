@@ -1332,7 +1332,7 @@ public class UTF8DataInputJsonParser
      * If we did want, we could rearrange things to require space before
      * next read, but initially let's just do nothing.
      */
-    private final void _verifyRootSpace() throws IOException
+    private final void _verifyRootSpace() throws JacksonException
     {
         int ch = _nextByte;
         if (ch <= INT_SPACE) {
@@ -1343,7 +1343,11 @@ public class UTF8DataInputJsonParser
             return;
         }
         if (ch > 0x7F) {
-            ch = _decodeCharForError(ch);
+            try {
+                ch = _decodeCharForError(ch);
+            } catch (IOException e) {
+                throw _wrapIOFailure(e);
+            }
         }
         _reportMissingRootWS(ch);
     }
