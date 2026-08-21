@@ -3349,17 +3349,18 @@ public abstract class NonBlockingUtf8JsonParserBase
 
     /**
      * Helper method for decoding multi-byte UTF-8 character for error reporting
-     * purposes: unlike blocking parsers we cannot wait for more input, so if the
-     * full sequence is not (yet) in the buffer we report the lead byte as-is.
+     * purposes only: caller has already detected a problem, so this method is
+     * strictly best-effort and will never fail -- lead byte is returned as-is if
+     * the full sequence is not (yet) buffered, or is not valid UTF-8. Also note
+     * that unlike blocking parsers we cannot wait for more input just to build a
+     * better error message.
      *
      * @param firstByte Lead byte of the character; input pointer is past it
      *
-     * @return Decoded character (code point), or lead byte if not fully available
-     *
-     * @throws JacksonException for invalid UTF-8 byte sequences
+     * @return Decoded character (code point) if decodable; lead byte if not
      */
-    // 19-Aug-2026, tatu: [core#1664]
-    private final int _decodeCharForError(int firstByte) throws JacksonException
+    // 21-Aug-2026, tatu: [core#1664]
+    private final int _decodeCharForError(int firstByte)
     {
         final int c = firstByte & 0xFF;
         final int needed;
@@ -3370,22 +3371,21 @@ public abstract class NonBlockingUtf8JsonParserBase
             needed = 2;
         } else if ((c & 0xF8) == 0xF0) { // 4 bytes; double-char with surrogates and all...
             needed = 3;
-        } else {
-            _reportInvalidInitial(c);
-            return c; // never gets here
-        }
-        if ((_inputPtr + needed) > _inputEnd) { // not enough input: report lead byte as-is
+        } else { // invalid lead byte; report as-is
             return c;
         }
-        switch (needed) {
-        case 1:
-            return _decodeUTF8_2(c, getByteFromBuffer(_inputPtr));
-        case 2:
-            return _decodeUTF8_3(c, getByteFromBuffer(_inputPtr), getByteFromBuffer(_inputPtr+1));
-        default:
-            return _decodeUTF8_4(c, getByteFromBuffer(_inputPtr), getByteFromBuffer(_inputPtr+1),
-                    getByteFromBuffer(_inputPtr+2)) + 0x10000;
+        if ((_inputPtr + needed) > _inputEnd) { // not (yet) buffered; report as-is
+            return c;
         }
+        int value = c & (0x3F >> needed); // 0x1F, 0x0F or 0x07
+        for (int i = 0; i < needed; ++i) {
+            final int d = getByteFromBuffer(_inputPtr + i) & 0xFF;
+            if ((d & 0xC0) != 0x080) { // invalid continuation byte; report lead byte as-is
+                return c;
+            }
+            value = (value << 6) | (d & 0x3F);
+        }
+        return value;
     }
 
     /*

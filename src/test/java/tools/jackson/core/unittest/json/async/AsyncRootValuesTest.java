@@ -33,12 +33,18 @@ class AsyncRootValuesTest extends AsyncTestBase
         // 3-byte sequence: LINE SEPARATOR (U+2028)
         _testMissingRootSeparatorUTF8(new byte[] { '1', '.', '5', (byte) 0xE2, (byte) 0x80, (byte) 0xA8 },
                 90, "code 8232");
-        // ... but if sequence is not (yet) fully available, lead byte is reported as-is:
-        // non-blocking parser cannot wait for more input just to build a message
+        // ... but decoding is strictly best-effort: if sequence is not (yet) fully
+        // available, lead byte is reported as-is (non-blocking parser cannot wait
+        // for more input just to build a message)
         _testMissingRootSeparatorUTF8(new byte[] { '1', '.', '5', (byte) 0xC2, (byte) 0xA0 },
                 4, "code 194");
         _testMissingRootSeparatorUTF8(new byte[] { '1', '.', '5', (byte) 0xC2 },
                 90, "code 194");
+        // ... and malformed UTF-8 must not replace the error caller asked for
+        _testMissingRootSeparatorUTF8(new byte[] { '1', '.', '5', (byte) 0xC2, (byte) 0x41 },
+                90, "code 194"); // invalid continuation byte
+        _testMissingRootSeparatorUTF8(new byte[] { '1', '.', '5', (byte) 0xFF },
+                90, "code 255"); // invalid lead byte
     }
 
     private void _testMissingRootSeparatorUTF8(byte[] doc, int readSize, String expCode)
