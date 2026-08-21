@@ -544,3 +544,13 @@ Patrick Strawderman (@kilink)
  * Contributed #1622: `UTF8JsonGenerator.writeBinary()` should allocate buffer
   based on supplied length
   (2.23.0)
+
+@hdimitrieski
+ * Reported #1668: `WriterBasedJsonGenerator` AIOOBE when a zero-length custom
+   escape lands at the output buffer boundary
+  (2.21.7)
+
+Burak KALAYCI (@kalayciburak)
+ * Contributed #1668: `WriterBasedJsonGenerator` AIOOBE when a zero-length custom
+   escape lands at the output buffer boundary
+  (2.21.7)
