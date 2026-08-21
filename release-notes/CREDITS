@@ -86,3 +86,13 @@ Scott Lewis (@scottslewis)
  * Contributed #1637: Add `JsonPointer.startsWith(JsonPointer)` to check
    prefix match
   (3.3.0)
+
+@hdimitrieski
+ * Reported #1668: `WriterBasedJsonGenerator` AIOOBE when a zero-length custom
+   escape lands at the output buffer boundary
+  (3.1.7)
+
+Burak KALAYCI (@kalayciburak)
+ * Contributed #1668: `WriterBasedJsonGenerator` AIOOBE when a zero-length custom
+   escape lands at the output buffer boundary
+  (3.1.7)
