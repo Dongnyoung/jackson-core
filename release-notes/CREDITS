@@ -75,3 +75,13 @@ Max Paulus (@maxpaulus43)
 Antonin Janec (@xtonik)
  * Contributed #1576: Use Java 17 intrinstics for long multiplication
   (3.2.0)
+
+@hdimitrieski
+ * Reported #1668: `WriterBasedJsonGenerator` AIOOBE when a zero-length custom
+   escape lands at the output buffer boundary
+  (3.1.7)
+
+Burak KALAYCI (@kalayciburak)
+ * Contributed #1668: `WriterBasedJsonGenerator` AIOOBE when a zero-length custom
+   escape lands at the output buffer boundary
+  (3.1.7)
