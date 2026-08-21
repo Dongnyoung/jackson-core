@@ -25,10 +25,6 @@ JSON library.
 #1664: UTF-8 byte-backed parsers report raw byte instead of decoded character
   for invalid root-value separator
  (reported, fix by DongNyoung L)
-#1668: `WriterBasedJsonGenerator` AIOOBE when a zero-length custom escape
-  lands at the output buffer boundary
- (reported by @hdimitrieski)
- (fix by @kalayciburak)
 
 3.2.3 (not yet released)
 
