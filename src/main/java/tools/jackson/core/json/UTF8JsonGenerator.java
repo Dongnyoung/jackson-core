@@ -1075,9 +1075,15 @@ public class UTF8JsonGenerator
             writeString(NumberOutput.toString(d, useFast));
             return this;
         }
-        // What is the max length for doubles? 40 chars?
         _verifyValueWrite(WRITE_NUMBER);
-        return writeRaw(NumberOutput.toString(d, useFast));
+        if (useFast) {
+            if ((_outputTail + NumberOutput.MAX_DOUBLE_BYTES) > _outputEnd) {
+                _flushBuffer();
+            }
+            _outputTail = NumberOutput.outputDouble(d, _outputBuffer, _outputTail);
+            return this;
+        }
+        return writeRaw(NumberOutput.toString(d, false));
     }
 
     @Override
@@ -1090,9 +1096,15 @@ public class UTF8JsonGenerator
             writeString(NumberOutput.toString(f, useFast));
             return this;
         }
-        // What is the max length for floats?
         _verifyValueWrite(WRITE_NUMBER);
-        return writeRaw(NumberOutput.toString(f, useFast));
+        if (useFast) {
+            if ((_outputTail + NumberOutput.MAX_FLOAT_BYTES) > _outputEnd) {
+                _flushBuffer();
+            }
+            _outputTail = NumberOutput.outputFloat(f, _outputBuffer, _outputTail);
+            return this;
+        }
+        return writeRaw(NumberOutput.toString(f, false));
     }
 
     @Override
@@ -2180,12 +2192,12 @@ public class UTF8JsonGenerator
             int maxRead) throws JacksonException
     {
         // anything to shift to front?
-        int i = 0;
-        while (inputPtr < inputEnd) {
-            readBuffer[i++]  = readBuffer[inputPtr++];
+        int available = inputEnd - inputPtr;
+        if (inputPtr > 0 && available > 0) {
+            System.arraycopy(readBuffer, inputPtr, readBuffer, 0, available);
         }
         inputPtr = 0;
-        inputEnd = i;
+        inputEnd = available;
         maxRead = Math.min(maxRead, readBuffer.length);
 
         do {

@@ -22,8 +22,17 @@ JSON library.
 #1646: Non-blocking ByteBuffer parser `releaseBuffered()` can write
   already-consumed bytes
  (reported, fix by DongNyoung L)
+#1664: UTF-8 byte-backed parsers report raw byte instead of decoded character
+  for invalid root-value separator
+ (reported, fix by DongNyoung L)
 
-3.2.2 (not yet released)
+3.2.3 (not yet released)
+
+#1667: `JsonParser.willInternPropertyNames()` returns `true` even when
+  `CANONICALIZE_PROPERTY_NAMES` is disabled
+ (contributed by @Dongnyoung)
+
+3.2.2 (14-Aug-2026)
 
 #1630: `UTF8StreamJsonParser.nextName()` ignores
   `JsonReadFeature.ALLOW_LEADING_DECIMAL_POINT_FOR_NUMBERS`
@@ -36,6 +45,8 @@ JSON library.
  (fix by @tinyb0y)
 #1649: Optimize `NumberInput.looksLikeValidNumber`
  (fix by @cowtowncoder, w/ Claude code)
+#1657: UTF8JsonGenerator: writeNumber fast path that avoids extra String allocation
+ (implemented by @pjfanning)
 
 3.2.1 (10-Jul-2026)
 
@@ -65,7 +76,7 @@ No changes since 3.2.0
 #1598: Possible TOCTOU timing bug in `BufferRecycler`
  (implemented by @pjfanning)
 
-3.1.6 (not yet released)
+3.1.6 (14-Aug-2026)
 
 #1630: `UTF8StreamJsonParser.nextName()` ignores
   `JsonReadFeature.ALLOW_LEADING_DECIMAL_POINT_FOR_NUMBERS`
@@ -76,8 +87,10 @@ No changes since 3.2.0
  (fix by Revanth M)
 #1643: Enforce maxNameLength incrementally in ReaderBasedJsonParser [CVE-2026-68498]
  (fix by @tinyb0y)
+#1651: Fix object context handling for buffered `INCLUDE_NON_NULL` tokens
+ (contributed by @Dongnyoung)
 
-3.1.5 (07-Jul-2025)
+3.1.5 (07-Jul-2026)
 
 #1616: `JsonParserSequence` read methods no longer use Parsers beyond the first
  (reported by @stefnoten-aca)

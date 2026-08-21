@@ -28,19 +28,23 @@ a pure JSON library.
  (fix by Revanth M)
 #1643: Enforce maxNameLength incrementally in ReaderBasedJsonParser [CVE-2026-68498]
  (fix by @tinyb0y)
+#1651: Fix Object context handling for buffered `INCLUDE_NON_NULL` tokens
+ (contributed by @Dongnyoung)
 
 2.22.1 (07-Jul-2026)
 2.22.0 (03-Jun-2026)
 
 No changes since 2.21
 
-2.21.6 (not yet released)
+2.21.6 (14-Aug-2026)
 
 #1642: Fix maxDocumentLength bypass in async parser single-feedInput() case
   [GHSA-2c4j-63jj-9fqr]
  (fix by Revanth M)
 #1643: Enforce maxNameLength incrementally in ReaderBasedJsonParser [CVE-2026-68498]
  (fix by @tinyb0y)
+#1651: Fix Object context handling for buffered `INCLUDE_NON_NULL` tokens
+ (contributed by @Dongnyoung)
 
 2.21.5 (06-Jul-2026)
 
