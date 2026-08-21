@@ -31,6 +31,10 @@ JSON library.
 #1667: `JsonParser.willInternPropertyNames()` returns `true` even when
   `CANONICALIZE_PROPERTY_NAMES` is disabled
  (contributed by @Dongnyoung)
+#1668: `WriterBasedJsonGenerator` AIOOBE when a zero-length custom escape
+  lands at the output buffer boundary
+ (reported by @hdimitrieski)
+ (fix by @kalayciburak)
 
 3.2.2 (14-Aug-2026)
 
@@ -75,6 +79,12 @@ No changes since 3.2.0
  (implemented by @cowtowncoder, w/ Claude code)
 #1598: Possible TOCTOU timing bug in `BufferRecycler`
  (implemented by @pjfanning)
+3.1.7 (not yet released)
+
+#1668: `WriterBasedJsonGenerator` AIOOBE when a zero-length custom escape
+  lands at the output buffer boundary
+ (reported by @hdimitrieski)
+ (fix by @kalayciburak)
 
 3.1.6 (14-Aug-2026)
 
