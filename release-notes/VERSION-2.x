@@ -20,10 +20,6 @@ a pure JSON library.
   based on supplied length
  (requested by @kilink)
  (contributed by @seonwooj0810)
-#1668: `WriterBasedJsonGenerator` AIOOBE when a zero-length custom escape
-  lands at the output buffer boundary
- (reported by @hdimitrieski)
- (fix by @kalayciburak)
 
 2.22.3 (not yet released)
 
