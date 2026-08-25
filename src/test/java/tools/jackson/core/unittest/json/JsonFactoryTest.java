@@ -135,8 +135,8 @@ public class JsonFactoryTest
 
         JsonFactory jf2 = f.copy();
         assertTrue(jf2.isEnabled(JsonFactory.Feature.INTERN_PROPERTY_NAMES));
-        assertTrue(f.isEnabled(JsonReadFeature.ALLOW_JAVA_COMMENTS));
-        assertTrue(f.isEnabled(JsonWriteFeature.ESCAPE_NON_ASCII));
+        assertTrue(jf2.isEnabled(JsonReadFeature.ALLOW_JAVA_COMMENTS));
+        assertTrue(jf2.isEnabled(JsonWriteFeature.ESCAPE_NON_ASCII));
     }
 
     @Test
