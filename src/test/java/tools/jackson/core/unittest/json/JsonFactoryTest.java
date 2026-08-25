@@ -319,7 +319,7 @@ public class JsonFactoryTest
 
     @Test
     public void testCanonicalizationEnabled() throws Exception {
-        doCanonicalizationTest(false);
+        doCanonicalizationTest(true);
     }
 
     @Test
