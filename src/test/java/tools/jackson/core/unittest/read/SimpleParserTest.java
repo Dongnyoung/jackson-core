@@ -745,6 +745,27 @@ class SimpleParserTest extends JacksonCoreTestBase
     }
 
     @Test
+    void readerBasedStringLengthEnforcesMaxStringLengthAtInputBoundary() throws Exception
+    {
+        final int maxLen = 500;
+        final String longText = "x".repeat(2_000);
+
+        JsonFactory factory = JsonFactory.builder()
+                .streamReadConstraints(StreamReadConstraints.builder().maxStringLength(maxLen).build())
+                .build();
+
+        // Keep the closing quote in the second read so _finishString() must
+        // copy the over-limit prefix into TextBuffer before loading more input.
+        try (JsonParser parser = factory.createParser(ObjectReadContext.empty(),
+                new ChunkedReader("[\"" + longText, "\"]"))) {
+            assertToken(JsonToken.START_ARRAY, parser.nextToken());
+            assertToken(JsonToken.VALUE_STRING, parser.nextToken());
+
+            assertThrows(StreamConstraintsException.class, parser::getStringLength);
+        }
+    }
+
+    @Test
     void readStringWithIncreasedLimit() throws Exception
     {
         for (int mode : ALL_MODES) {
@@ -870,6 +891,41 @@ class SimpleParserTest extends JacksonCoreTestBase
     /* Helper methods
     /**********************************************************
      */
+
+    private static class ChunkedReader extends Reader
+    {
+        private final String[] _chunks;
+
+        private int _chunkIndex;
+        private int _chunkOffset;
+
+        ChunkedReader(String... chunks) {
+            _chunks = chunks;
+        }
+
+        @Override
+        public int read(char[] cbuf, int off, int len) throws IOException {
+            if (len == 0) {
+                return 0;
+            }
+            while (_chunkIndex < _chunks.length) {
+                String chunk = _chunks[_chunkIndex];
+                int remaining = chunk.length() - _chunkOffset;
+                if (remaining > 0) {
+                    int amount = Math.min(len, remaining);
+                    chunk.getChars(_chunkOffset, _chunkOffset + amount, cbuf, off);
+                    _chunkOffset += amount;
+                    return amount;
+                }
+                ++_chunkIndex;
+                _chunkOffset = 0;
+            }
+            return -1;
+        }
+
+        @Override
+        public void close() { }
+    }
 
     private void _doTestSpec(boolean verify)
     {
