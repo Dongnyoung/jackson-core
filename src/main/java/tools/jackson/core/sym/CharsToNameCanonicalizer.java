@@ -111,7 +111,7 @@ public final class CharsToNameCanonicalizer
      */
     protected final AtomicReference<TableInfo> _tableInfo;
 
-    private final Object _parentTableInfoId;
+    private final TableInfo _parentTableInfo;
 
     /**
      * Constraints used by {@link TokenStreamFactory} that uses
@@ -238,7 +238,7 @@ public final class CharsToNameCanonicalizer
             int seed)
     {
         _parent = null;
-        _parentTableInfoId = null;
+        _parentTableInfo = null;
         _seed = seed;
         _streamReadConstraints = src;
 
@@ -262,7 +262,7 @@ public final class CharsToNameCanonicalizer
             TableInfo parentState)
     {
         _parent = parent;
-        _parentTableInfoId = parentState.id;
+        _parentTableInfo = parentState;
         _streamReadConstraints = src;
         _seed = seed;
         _tableInfo = null; // not used by child tables
@@ -358,7 +358,7 @@ public final class CharsToNameCanonicalizer
 
         // we will try to merge if child table has new entries
         if (_parent != null && _canonicalize) { // canonicalize set to false if max size was reached
-            _parent.mergeChild(_parentTableInfoId, new TableInfo(this));
+            _parent.mergeChild(_parentTableInfo, new TableInfo(this));
             // Let's also mark this instance as dirty, so that just in
             // case release was too early, there's no corruption of possibly shared data.
             _hashShared = true;
@@ -372,32 +372,19 @@ public final class CharsToNameCanonicalizer
      * Note that caller has to make sure symbol table passed in is
      * really a child or sibling of this symbol table.
      */
-    private void mergeChild(Object parentStateId, TableInfo childState)
+    private void mergeChild(TableInfo parentState, TableInfo childState)
     {
-        final int childCount = childState.size;
-        TableInfo currState = _tableInfo.get();
-        final boolean staleChild = (currState.id != parentStateId);
-
-        // Should usually grow; but occasionally could also shrink if (but only if)
-        // collision list overflow ends up clearing some collision lists.
-        if (childCount == currState.size) {
-            return;
-        }
         // One caveat: let's try to avoid problems with  degenerate cases of documents with
         // generated "random" names: for these, symbol tables would bloat indefinitely.
         // One way to do this is to just purge tables if they grow
         // too large, and that's what we'll do here.
-        if (childCount > MAX_ENTRIES_FOR_REUSE) {
-            if (staleChild) {
-                return;
-            }
-            // At any rate, need to clean up the tables
+        if (childState.size > MAX_ENTRIES_FOR_REUSE) {
             childState = TableInfo.createInitial(DEFAULT_T_SIZE);
-        } else if ((childCount < currState.size) && staleChild) {
-            // Do not let an older child replace a newer, larger table from another child.
-            return;
         }
-        _tableInfo.compareAndSet(currState, childState);
+        // Only replace the exact state this child was forked from: if another child has
+        // merged in the meantime, its table is newer and ours is simply dropped rather
+        // than clobbering it (which could lose names, or shrink the table).
+        _tableInfo.compareAndSet(parentState, childState);
     }
 
     /*
@@ -879,7 +866,6 @@ public final class CharsToNameCanonicalizer
      */
     private final static class TableInfo
     {
-        final Object id = new Object();
         final int size;
         final int longestCollisionList;
         final String[] symbols;

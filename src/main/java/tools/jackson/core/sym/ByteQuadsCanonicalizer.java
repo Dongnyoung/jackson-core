@@ -76,7 +76,7 @@ public class ByteQuadsCanonicalizer
      */
     protected final AtomicReference<TableInfo> _tableInfo;
 
-    private final Object _parentTableInfoId;
+    private final TableInfo _parentTableInfo;
 
     /**
      * Seed value we use as the base to make hash codes non-static between
@@ -225,7 +225,7 @@ public class ByteQuadsCanonicalizer
     {
         // Settings to distinguish parent table: no parent
         _parent = null;
-        _parentTableInfoId = null;
+        _parentTableInfo = null;
         _count = 0;
 
         // and mark as shared just in case to prevent modifications
@@ -258,7 +258,7 @@ public class ByteQuadsCanonicalizer
             boolean intern, boolean failOnDoS)
     {
         _parent = parent;
-        _parentTableInfoId = state.id;
+        _parentTableInfo = state;
         _seed = seed;
         _interner = intern ? InternCache.instance : null;
         _failOnDoS = failOnDoS;
@@ -293,7 +293,7 @@ public class ByteQuadsCanonicalizer
     private ByteQuadsCanonicalizer(TableInfo state)
     {
         _parent = null;
-        _parentTableInfoId = null;
+        _parentTableInfo = null;
         _seed = 0;
         _interner = null;
         _failOnDoS = true;
@@ -398,40 +398,26 @@ public class ByteQuadsCanonicalizer
         // we will try to merge if child table has new entries
         // 28-Jul-2019, tatu: From [core#548]: do not share if immediate rehash needed
         if ((_parent != null) && maybeDirty()) {
-            _parent.mergeChild(_parentTableInfoId, new TableInfo(this));
+            _parent.mergeChild(_parentTableInfo, new TableInfo(this));
             // Let's also mark this instance as dirty, so that just in
             // case release was too early, there's no corruption of possibly shared data.
             _hashShared = true;
         }
     }
 
-    private void mergeChild(Object parentStateId, TableInfo childState)
+    private void mergeChild(TableInfo parentState, TableInfo childState)
     {
-        final int childCount = childState.count;
-        TableInfo currState = _tableInfo.get();
-        final boolean staleChild = (currState.id != parentStateId);
-
-        // Should usually grow; but occasionally could also shrink if (but only if)
-        // collision list overflow ends up clearing some collision lists.
-        if (childCount == currState.count) {
-            return;
-        }
-
         // One caveat: let's try to avoid problems with degenerate cases of documents with
         // generated "random" names: for these, symbol tables would bloat indefinitely.
         // One way to do this is to just purge tables if they grow
         // too large, and that's what we'll do here.
-        if (childCount > MAX_ENTRIES_FOR_REUSE) {
-            if (staleChild) {
-                return;
-            }
-            // At any rate, need to clean up the tables
+        if (childState.count > MAX_ENTRIES_FOR_REUSE) {
             childState = TableInfo.createInitial(DEFAULT_T_SIZE);
-        } else if ((childCount < currState.count) && staleChild) {
-            // Do not let an older child replace a newer, larger table from another child.
-            return;
         }
-        _tableInfo.compareAndSet(currState, childState);
+        // Only replace the exact state this child was forked from: if another child has
+        // merged in the meantime, its table is newer and ours is simply dropped rather
+        // than clobbering it (which could lose names, or shrink the table).
+        _tableInfo.compareAndSet(parentState, childState);
     }
 
     /*
@@ -1430,7 +1416,6 @@ public class ByteQuadsCanonicalizer
      */
     private final static class TableInfo
     {
-        public final Object id = new Object();
         public final int size;
         public final int count;
         public final int tertiaryShift;
