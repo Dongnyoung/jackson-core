@@ -173,6 +173,32 @@ class AsyncStringArrayTest extends AsyncTestBase
         }
     }
 
+    @Test
+    void skippedAsciiStringSmallLimit() throws IOException
+    {
+        final String[] input = new String[] {
+                "x".repeat(200),
+                "ok"
+        };
+        JsonFactory f = JsonFactory.builder()
+                .streamReadConstraints(StreamReadConstraints.builder().maxStringLength(100).build())
+                .build();
+        byte[] data = _stringDoc(f, input);
+
+        try (AsyncReaderWrapper r = asyncForBytes(f, 9000, data, 0)) {
+            assertNull(r.currentToken());
+            assertToken(JsonToken.START_ARRAY, r.nextToken());
+            assertToken(JsonToken.VALUE_STRING, r.nextToken());
+            r.nextToken();
+            fail("expected IOException");
+        } catch (JacksonException ie) {
+            assertTrue(ie.getMessage().startsWith("String value length"),
+                    "unexpected exception message: " + ie.getMessage());
+            assertTrue(ie.getMessage().contains("exceeds the maximum allowed (100"),
+                    "unexpected exception message: " + ie.getMessage());
+        }
+    }
+
     private void _testStrings(JsonFactory f, String[] values,
             byte[] data, int offset, int readSize) throws IOException
     {
