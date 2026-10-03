@@ -3207,6 +3207,8 @@ public class UTF8StreamJsonParser
         _tokenIncomplete = false;
 
         // Need to be fully UTF-8 aware here:
+        long totalLen = 0;
+        final long maxStringLen = _streamReadConstraints.getMaxStringLength();
         final int[] codes = _icUTF8;
         final byte[] inputBuffer = _inputBuffer;
 
@@ -3223,14 +3225,23 @@ public class UTF8StreamJsonParser
                     ptr = _inputPtr;
                     max = _inputEnd;
                 }
+                int startPtr = ptr;
                 while (ptr < max) {
                     c = inputBuffer[ptr++] & 0xFF;
                     if (codes[c] != 0) {
                         _inputPtr = ptr;
+                        totalLen += ptr - startPtr - 1;
+                        if (totalLen > maxStringLen) {
+                            _streamReadConstraints.validateStringLengthLong(totalLen);
+                        }
                         break ascii_loop;
                     }
                 }
                 _inputPtr = ptr;
+                totalLen += ptr - startPtr;
+                if (totalLen > maxStringLen) {
+                    _streamReadConstraints.validateStringLengthLong(totalLen);
+                }
             }
             // Ok: end marker, escape or multi-byte?
             if (c == INT_QUOTE) {
@@ -3240,23 +3251,31 @@ public class UTF8StreamJsonParser
             switch (codes[c]) {
             case 1: // backslash
                 _decodeEscaped();
+                ++totalLen;
                 break;
             case 2: // 2-byte UTF
                 _skipUtf8_2();
+                ++totalLen;
                 break;
             case 3: // 3-byte UTF
                 _skipUtf8_3(c);
+                ++totalLen;
                 break;
             case 4: // 4-byte UTF
                 _skipUtf8_4(c);
+                totalLen += 2;
                 break;
             default:
                 if (c < INT_SPACE) {
                     _throwUnquotedSpace(c, "string value");
+                    ++totalLen;
                 } else {
                     // Is this good enough error message?
                     _reportInvalidChar(c);
                 }
+            }
+            if (totalLen > maxStringLen) {
+                _streamReadConstraints.validateStringLengthLong(totalLen);
             }
         }
     }

@@ -2228,6 +2228,8 @@ public class UTF8DataInputJsonParser
         _tokenIncomplete = false;
 
         // Need to be fully UTF-8 aware here:
+        long totalLen = 0;
+        final long maxStringLen = _streamReadConstraints.getMaxStringLength();
         final int[] codes = _icUTF8;
 
         main_loop:
@@ -2240,6 +2242,10 @@ public class UTF8DataInputJsonParser
                 if (codes[c] != 0) {
                     break ascii_loop;
                 }
+                ++totalLen;
+                if (totalLen > maxStringLen) {
+                    _streamReadConstraints.validateStringLengthLong(totalLen);
+                }
             }
             // Ok: end marker, escape or multi-byte?
             if (c == INT_QUOTE) {
@@ -2249,23 +2255,31 @@ public class UTF8DataInputJsonParser
             switch (codes[c]) {
             case 1: // backslash
                 _decodeEscaped();
+                ++totalLen;
                 break;
             case 2: // 2-byte UTF
                 _skipUtf8_2();
+                ++totalLen;
                 break;
             case 3: // 3-byte UTF
                 _skipUtf8_3(c);
+                ++totalLen;
                 break;
             case 4: // 4-byte UTF
                 _skipUtf8_4();
+                totalLen += 2;
                 break;
             default:
                 if (c < INT_SPACE) {
                     _throwUnquotedSpace(c, "string value");
+                    ++totalLen;
                 } else {
                     // Is this good enough error message?
                     _reportInvalidChar(c);
                 }
+            }
+            if (totalLen > maxStringLen) {
+                _streamReadConstraints.validateStringLengthLong(totalLen);
             }
         }
     }
